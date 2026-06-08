@@ -73,6 +73,9 @@ class FacePointageFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         cameraExecutor = Executors.newSingleThreadExecutor()
 
+        val engine = if (FaceNetHelper.isAvailable()) "FaceNet IA ✓" else "Geometrique"
+        updateStatus("Moteur: $engine — Approchez votre visage...", "#FFFFFF")
+
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
             == PackageManager.PERMISSION_GRANTED) {
             startCamera()
