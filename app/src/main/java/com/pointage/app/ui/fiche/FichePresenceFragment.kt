@@ -12,6 +12,7 @@ import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -33,6 +34,7 @@ class FichePresenceFragment : Fragment() {
     private val viewModel: PointageViewModel by activityViewModels()
     private var employeesList: List<Employee> = emptyList()
     private var ficheCourante: FichePresence? = null
+    private var spinnersReady = false
 
     private val moisNoms = listOf(
         "Janvier", "Fevrier", "Mars", "Avril", "Mai", "Juin",
@@ -61,12 +63,24 @@ class FichePresenceFragment : Fragment() {
         val anneeIndex = annees.indexOf(calAnnee.toString()).coerceAtLeast(0)
         binding.spinnerAnnee.setSelection(anneeIndex)
 
+        val spinnerListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, v: View?, pos: Int, id: Long) {
+                if (spinnersReady) chargerFiche()
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+        binding.spinnerMois.onItemSelectedListener = spinnerListener
+        binding.spinnerAnnee.onItemSelectedListener = spinnerListener
+        binding.spinnerEmployeFiche.onItemSelectedListener = spinnerListener
+
         viewModel.employees.observe(viewLifecycleOwner) { employees ->
             employeesList = employees
             val noms = employees.map { "${it.nom} ${it.prenom} (${it.matricule})" }
             val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, noms)
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             binding.spinnerEmployeFiche.adapter = adapter
+            spinnersReady = true
+            chargerFiche()
         }
 
         val lignesAdapter = LignePresenceAdapter()
@@ -85,22 +99,21 @@ class FichePresenceFragment : Fragment() {
             binding.tvTotalHeures.text = "Total : ${heures}h ${String.format("%02d", minutes)}min"
         }
 
-        binding.btnChargerFiche.setOnClickListener {
-            val position = binding.spinnerEmployeFiche.selectedItemPosition
-            if (employeesList.isEmpty() || position < 0) {
-                Toast.makeText(requireContext(), "Selectionnez un employe", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            val mois = binding.spinnerMois.selectedItemPosition + 1
-            val annee = annees[binding.spinnerAnnee.selectedItemPosition].toInt()
-            viewModel.clearFichePresence()
-            viewModel.chargerFichePresence(employeesList[position].id, mois, annee)
-        }
+        binding.btnChargerFiche.setOnClickListener { chargerFiche() }
 
         binding.btnTelechargerPdf.setOnClickListener {
             ficheCourante?.let { genererPdf(it) }
                 ?: Toast.makeText(requireContext(), "Chargez d'abord la fiche", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun chargerFiche() {
+        val position = binding.spinnerEmployeFiche.selectedItemPosition
+        if (employeesList.isEmpty() || position < 0 || position >= employeesList.size) return
+        val mois = binding.spinnerMois.selectedItemPosition + 1
+        val annee = annees[binding.spinnerAnnee.selectedItemPosition].toInt()
+        viewModel.clearFichePresence()
+        viewModel.chargerFichePresence(employeesList[position].id, mois, annee)
     }
 
     private fun genererPdf(fiche: FichePresence) {
