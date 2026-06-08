@@ -13,6 +13,7 @@ import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.pointage.app.R
 import com.pointage.app.data.model.Employee
@@ -35,7 +36,7 @@ class EmployesFragment : Fragment() {
 
         val adapter = EmployeesAdapter(
             onConfigurerEmpreinte = { employee -> lancerConfigurationBiometrie(employee, "EMPREINTE") },
-            onConfigurerVisage = { employee -> lancerConfigurationBiometrie(employee, "VISAGE") },
+            onConfigurerVisage = { employee -> naviguerVersEnregistrementVisage(employee) },
             onResetBiometrie = { employee -> viewModel.reinitialiserBiometrie(employee.id) }
         )
         binding.recyclerEmployes.layoutManager = LinearLayoutManager(requireContext())
@@ -49,6 +50,11 @@ class EmployesFragment : Fragment() {
         binding.fabAjouterEmployee.setOnClickListener {
             afficherDialogAjout()
         }
+    }
+
+    private fun naviguerVersEnregistrementVisage(employee: Employee) {
+        val action = EmployesFragmentDirections.actionNavEmployesToNavFaceEnrollment(employee.id)
+        findNavController().navigate(action)
     }
 
     private fun lancerConfigurationBiometrie(employee: Employee, methode: String) {

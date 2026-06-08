@@ -7,7 +7,11 @@
     <fragment
         android:id="@+id/nav_pointage"
         android:name="com.pointage.app.ui.pointage.PointageFragment"
-        android:label="Pointage" />
+        android:label="Pointage">
+        <action
+            android:id="@+id/action_nav_pointage_to_nav_face_pointage"
+            app:destination="@id/nav_face_pointage" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_historique"
@@ -17,11 +21,29 @@
     <fragment
         android:id="@+id/nav_employes"
         android:name="com.pointage.app.ui.employes.EmployesFragment"
-        android:label="Employes" />
+        android:label="Employes">
+        <action
+            android:id="@+id/action_nav_employes_to_nav_face_enrollment"
+            app:destination="@id/nav_face_enrollment" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_fiche"
         android:name="com.pointage.app.ui.fiche.FichePresenceFragment"
         android:label="Fiche de presence" />
+
+    <fragment
+        android:id="@+id/nav_face_enrollment"
+        android:name="com.pointage.app.face.FaceEnrollmentFragment"
+        android:label="Enregistrer visage">
+        <argument
+            android:name="employeeId"
+            app:argType="long" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_face_pointage"
+        android:name="com.pointage.app.face.FacePointageFragment"
+        android:label="Pointage facial" />
 
 </navigation>

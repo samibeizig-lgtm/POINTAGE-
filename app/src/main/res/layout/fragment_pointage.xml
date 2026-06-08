@@ -57,9 +57,17 @@
             android:id="@+id/btn_visage"
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:text="Pointer par reconnaissance faciale"
-            android:textSize="16sp"
+            android:text="Pointer par reconnaissance faciale (systeme)"
+            android:textSize="14sp"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_marginBottom="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_visage_custom"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="Pointer par visage (camera ML)"
+            android:textSize="16sp"
             android:layout_marginBottom="32dp" />
 
         <androidx.cardview.widget.CardView

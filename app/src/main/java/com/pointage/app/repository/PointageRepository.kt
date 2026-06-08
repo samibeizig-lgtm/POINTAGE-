@@ -2,6 +2,7 @@ package com.pointage.app.repository
 
 import com.pointage.app.data.AppDatabase
 import com.pointage.app.data.model.*
+import com.pointage.app.face.FaceRecognitionHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.*
@@ -77,4 +78,34 @@ class PointageRepository(private val db: AppDatabase) {
     fun getPointagesDuJour(debut: Long, fin: Long) = db.pointageDao().getPointagesDuJour(debut, fin)
 
     fun getPointagesEmployee(employeeId: Long) = db.pointageDao().getPointagesEmployee(employeeId)
+
+    suspend fun enregistrerVisage(employeeId: Long, embeddingStr: String) = withContext(Dispatchers.IO) {
+        db.faceSignatureDao().deleteByEmployee(employeeId)
+        db.faceSignatureDao().insert(FaceSignature(employeeId = employeeId, embedding = embeddingStr))
+    }
+
+    suspend fun identifierEtPointer(embedding: FloatArray): Pair<String, TypePointage>? = withContext(Dispatchers.IO) {
+        val signatures = db.faceSignatureDao().getAllSignatures()
+        var bestMatch: Long? = null
+        var bestScore = 0f
+        for (sig in signatures) {
+            val storedEmbedding = FaceRecognitionHelper.stringToEmbedding(sig.embedding)
+            val score = FaceRecognitionHelper.cosineSimilarity(embedding, storedEmbedding)
+            if (score > bestScore) {
+                bestScore = score
+                bestMatch = sig.employeeId
+            }
+        }
+        if (bestScore < 0.82f || bestMatch == null) return@withContext null
+        val employee = db.employeeDao().getEmployeeById(bestMatch) ?: return@withContext null
+        val type = inscrirePointageInternal(bestMatch, MethodeAuthentification.VISAGE)
+        Pair("${employee.prenom} ${employee.nom}", type)
+    }
+
+    private suspend fun inscrirePointageInternal(employeeId: Long, methode: MethodeAuthentification): TypePointage {
+        val dernier = db.pointageDao().getDernierPointage(employeeId)
+        val type = if (dernier == null || dernier.type == TypePointage.DEPART) TypePointage.ARRIVEE else TypePointage.DEPART
+        db.pointageDao().insert(Pointage(employeeId = employeeId, type = type, methode = methode))
+        return type
+    }
 }

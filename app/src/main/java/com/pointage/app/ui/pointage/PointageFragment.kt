@@ -12,6 +12,7 @@ import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import com.pointage.app.R
 import com.pointage.app.data.model.Employee
 import com.pointage.app.data.model.MethodeAuthentification
@@ -68,6 +69,12 @@ class PointageFragment : Fragment() {
 
         binding.btnVisage.setOnClickListener {
             lancerBiometrie(MethodeAuthentification.VISAGE)
+        }
+
+        binding.btnVisageCustom.setOnClickListener {
+            findNavController().navigate(
+                PointageFragmentDirections.actionNavPointageToNavFacePointage()
+            )
         }
 
         afficherHeureActuelle()

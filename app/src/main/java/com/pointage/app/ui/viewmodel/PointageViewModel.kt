@@ -28,6 +28,9 @@ class PointageViewModel(application: Application) : AndroidViewModel(application
     private val _error = MutableLiveData<String?>()
     val error: LiveData<String?> = _error
 
+    private val _facePointageResult = MutableLiveData<Pair<String, TypePointage>?>()
+    val facePointageResult: LiveData<Pair<String, TypePointage>?> = _facePointageResult
+
     private val _employeeSelectionne = MutableLiveData<Employee?>()
     val employeeSelectionne: LiveData<Employee?> = _employeeSelectionne
 
@@ -73,6 +76,34 @@ class PointageViewModel(application: Application) : AndroidViewModel(application
 
     fun clearError() {
         _error.value = null
+    }
+
+    fun enregistrerVisage(employeeId: Long, embeddingStr: String) {
+        viewModelScope.launch {
+            try {
+                repository.enregistrerVisage(employeeId, embeddingStr)
+                repository.enregistrerBiometrie(employeeId, "VISAGE")
+            } catch (e: Exception) {
+                _error.value = "Erreur enregistrement visage: ${e.message}"
+            }
+        }
+    }
+
+    fun identifierEtPointerParVisage(embedding: FloatArray) {
+        viewModelScope.launch {
+            try {
+                val result = repository.identifierEtPointer(embedding)
+                if (result != null) {
+                    _facePointageResult.value = result
+                }
+            } catch (e: Exception) {
+                _error.value = "Erreur reconnaissance: ${e.message}"
+            }
+        }
+    }
+
+    fun clearFacePointageResult() {
+        _facePointageResult.value = null
     }
 
     fun enregistrerBiometrie(employeeId: Long, methode: String) {
