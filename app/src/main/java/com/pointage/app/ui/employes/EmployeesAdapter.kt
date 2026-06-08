@@ -11,7 +11,6 @@ import com.pointage.app.data.model.Employee
 import com.pointage.app.databinding.ItemEmployeeBinding
 
 class EmployeesAdapter(
-    private val onConfigurerEmpreinte: (Employee) -> Unit,
     private val onConfigurerVisage: (Employee) -> Unit,
     private val onResetBiometrie: (Employee) -> Unit
 ) : ListAdapter<Employee, EmployeesAdapter.ViewHolder>(DiffCallback()) {
@@ -23,19 +22,13 @@ class EmployeesAdapter(
             binding.tvPoste.text = employee.poste
 
             if (employee.biometrieConfiguree) {
-                val methodeLabel = when (employee.methodeAuth) {
-                    "EMPREINTE" -> "Empreinte OK"
-                    "VISAGE" -> "Visage OK"
-                    else -> "Bio OK"
-                }
-                binding.tvBiometrieStatus.text = methodeLabel
+                binding.tvBiometrieStatus.text = "Visage OK"
                 binding.tvBiometrieStatus.setTextColor(ContextCompat.getColor(binding.root.context, R.color.arrivee_color))
             } else {
                 binding.tvBiometrieStatus.text = "Non configure"
                 binding.tvBiometrieStatus.setTextColor(ContextCompat.getColor(binding.root.context, R.color.depart_color))
             }
 
-            binding.btnConfigurerEmpreinte.setOnClickListener { onConfigurerEmpreinte(employee) }
             binding.btnConfigurerVisage.setOnClickListener { onConfigurerVisage(employee) }
             binding.btnResetBiometrie.setOnClickListener { onResetBiometrie(employee) }
         }

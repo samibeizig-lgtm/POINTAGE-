@@ -3,85 +3,108 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:background="#FFF8F5">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:gravity="center">
+        android:gravity="center"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="NEXSTAY"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="@color/colorPrimary"
+            android:letterSpacing="0.15"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pointage"
+            android:textSize="16sp"
+            android:textColor="@color/terracotta_dark"
+            android:layout_marginBottom="24dp" />
 
         <TextView
             android:id="@+id/tv_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="24dp"
-            android:textColor="@color/colorPrimary" />
+            android:textSize="14sp"
+            android:textColor="#757575"
+            android:layout_marginBottom="24dp" />
 
         <TextView
             android:id="@+id/tv_aucun_biometrie"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Aucun employe avec biometrie configuree.\nAllez dans l'onglet Employes pour configurer."
-            android:textSize="14sp"
+            android:text="Aucun employe avec visage configure.\nAllez dans l'onglet Employes pour configurer."
+            android:textSize="13sp"
             android:textColor="@color/depart_color"
             android:gravity="center"
             android:padding="12dp"
-            android:visibility="gone"
-            android:layout_marginBottom="16dp" />
+            android:background="#FFEBEE"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Selectionner un employe"
-            android:textSize="14sp"
-            android:layout_marginBottom="8dp" />
-
-        <Spinner
-            android:id="@+id/spinner_employee"
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="32dp" />
+            android:layout_marginBottom="24dp"
+            app:cardElevation="3dp"
+            app:cardCornerRadius="12dp"
+            app:cardBackgroundColor="#FFFFFF">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_empreinte"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:text="Pointer par empreinte digitale"
-            android:textSize="16sp"
-            android:layout_marginBottom="16dp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_visage"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:text="Pointer par reconnaissance faciale (systeme)"
-            android:textSize="14sp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_marginBottom="8dp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Selectionner un employe"
+                    android:textSize="13sp"
+                    android:textColor="#757575"
+                    android:layout_marginBottom="6dp" />
+
+                <Spinner
+                    android:id="@+id/spinner_employee"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_visage_custom"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:text="Pointer par visage (camera ML)"
+            android:layout_height="64dp"
+            android:text="Pointer par reconnaissance faciale"
             android:textSize="16sp"
-            android:layout_marginBottom="32dp" />
+            android:backgroundTint="@color/colorPrimary"
+            android:layout_marginBottom="16dp"
+            app:cornerRadius="12dp" />
 
         <androidx.cardview.widget.CardView
             android:id="@+id/card_resultat"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardElevation="4dp"
-            app:cardCornerRadius="8dp">
+            app:cardCornerRadius="12dp"
+            app:cardBackgroundColor="#FFF3EE">
 
             <TextView
                 android:id="@+id/tv_resultat"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:padding="16dp"
+                android:padding="20dp"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="@color/colorPrimary"

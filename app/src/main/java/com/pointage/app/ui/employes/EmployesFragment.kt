@@ -35,7 +35,6 @@ class EmployesFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val adapter = EmployeesAdapter(
-            onConfigurerEmpreinte = { employee -> lancerConfigurationBiometrie(employee, "EMPREINTE") },
             onConfigurerVisage = { employee -> naviguerVersEnregistrementVisage(employee) },
             onResetBiometrie = { employee -> viewModel.reinitialiserBiometrie(employee.id) }
         )

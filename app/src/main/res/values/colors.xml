@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#1565C0</color>
-    <color name="colorPrimaryDark">#003c8f</color>
-    <color name="colorAccent">#1E88E5</color>
+    <color name="colorPrimary">#C4704F</color>
+    <color name="colorPrimaryDark">#8D4F38</color>
+    <color name="colorAccent">#E8956D</color>
+    <color name="terracotta">#C4704F</color>
+    <color name="terracotta_dark">#8D4F38</color>
+    <color name="terracotta_light">#F2C4A8</color>
     <color name="arrivee_color">#4CAF50</color>
     <color name="depart_color">#F44336</color>
 </resources>

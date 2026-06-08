@@ -1,6 +1,14 @@
 package com.pointage.app.ui.fiche
 
+import android.content.ContentValues
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.pdf.PdfDocument
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,8 +18,12 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.pointage.app.data.model.Employee
+import com.pointage.app.data.model.FichePresence
 import com.pointage.app.databinding.FragmentFichePresenceBinding
 import com.pointage.app.ui.viewmodel.PointageViewModel
+import java.io.File
+import java.io.FileOutputStream
+import java.text.SimpleDateFormat
 import java.util.*
 
 class FichePresenceFragment : Fragment() {
@@ -20,6 +32,13 @@ class FichePresenceFragment : Fragment() {
     private val binding get() = _binding!!
     private val viewModel: PointageViewModel by activityViewModels()
     private var employeesList: List<Employee> = emptyList()
+    private var ficheCourante: FichePresence? = null
+
+    private val moisNoms = listOf(
+        "Janvier", "Fevrier", "Mars", "Avril", "Mai", "Juin",
+        "Juillet", "Aout", "Septembre", "Octobre", "Novembre", "Decembre"
+    )
+    private val annees = listOf("2026", "2027", "2028")
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentFichePresenceBinding.inflate(inflater, container, false)
@@ -29,9 +48,18 @@ class FichePresenceFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val cal = Calendar.getInstance()
-        binding.etMois.setText(String.format("%02d", cal.get(Calendar.MONTH) + 1))
-        binding.etAnnee.setText(cal.get(Calendar.YEAR).toString())
+        val moisAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, moisNoms)
+        moisAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spinnerMois.adapter = moisAdapter
+        val calMois = Calendar.getInstance().get(Calendar.MONTH)
+        binding.spinnerMois.setSelection(calMois)
+
+        val anneeAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, annees)
+        anneeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spinnerAnnee.adapter = anneeAdapter
+        val calAnnee = Calendar.getInstance().get(Calendar.YEAR)
+        val anneeIndex = annees.indexOf(calAnnee.toString()).coerceAtLeast(0)
+        binding.spinnerAnnee.setSelection(anneeIndex)
 
         viewModel.employees.observe(viewLifecycleOwner) { employees ->
             employeesList = employees
@@ -47,12 +75,14 @@ class FichePresenceFragment : Fragment() {
 
         viewModel.fichePresence.observe(viewLifecycleOwner) { fiche ->
             fiche ?: return@observe
-            binding.tvTitreEmployee.text = "${fiche.employee.nom} ${fiche.employee.prenom} - ${fiche.employee.poste}"
+            ficheCourante = fiche
+            binding.layoutFicheContent.visibility = View.VISIBLE
+            binding.tvTitreEmployee.text = "${fiche.employee.nom} ${fiche.employee.prenom} — ${fiche.employee.matricule}"
             lignesAdapter.submitList(fiche.lignes)
             val totalMinutes = fiche.lignes.sumOf { it.dureeMinutes ?: 0L }
             val heures = totalMinutes / 60
             val minutes = totalMinutes % 60
-            binding.tvTotalHeures.text = "Total: ${heures}h ${minutes}min"
+            binding.tvTotalHeures.text = "Total : ${heures}h ${String.format("%02d", minutes)}min"
         }
 
         binding.btnChargerFiche.setOnClickListener {
@@ -61,13 +91,127 @@ class FichePresenceFragment : Fragment() {
                 Toast.makeText(requireContext(), "Selectionnez un employe", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            val mois = binding.etMois.text.toString().toIntOrNull()
-            val annee = binding.etAnnee.text.toString().toIntOrNull()
-            if (mois == null || mois !in 1..12 || annee == null) {
-                Toast.makeText(requireContext(), "Mois/Annee invalide", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
+            val mois = binding.spinnerMois.selectedItemPosition + 1
+            val annee = annees[binding.spinnerAnnee.selectedItemPosition].toInt()
             viewModel.chargerFichePresence(employeesList[position].id, mois, annee)
+        }
+
+        binding.btnTelechargerPdf.setOnClickListener {
+            ficheCourante?.let { genererPdf(it) }
+                ?: Toast.makeText(requireContext(), "Chargez d'abord la fiche", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun genererPdf(fiche: FichePresence) {
+        val document = PdfDocument()
+        val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create()
+        val page = document.startPage(pageInfo)
+        val canvas: Canvas = page.canvas
+
+        val paintTitre = Paint().apply { color = Color.parseColor("#C4704F"); textSize = 28f; isFakeBoldText = true }
+        val paintSousTitre = Paint().apply { color = Color.parseColor("#8D4F38"); textSize = 14f }
+        val paintHeader = Paint().apply { color = Color.WHITE; textSize = 12f; isFakeBoldText = true }
+        val paintCell = Paint().apply { color = Color.parseColor("#333333"); textSize = 11f }
+        val paintTotal = Paint().apply { color = Color.parseColor("#C4704F"); textSize = 13f; isFakeBoldText = true }
+        val paintLine = Paint().apply { color = Color.parseColor("#E8D5CC"); strokeWidth = 1f }
+        val paintBgHeader = Paint().apply { color = Color.parseColor("#C4704F") }
+        val paintBgRow = Paint().apply { color = Color.parseColor("#FFF8F5") }
+        val paintBgRowAlt = Paint().apply { color = Color.WHITE }
+
+        var y = 50f
+
+        canvas.drawText("NEXSTAY", 40f, y, paintTitre)
+        y += 22f
+        canvas.drawText("Systeme de Pointage", 40f, y, paintSousTitre)
+        y += 30f
+
+        canvas.drawLine(40f, y, 555f, y, paintLine.apply { strokeWidth = 2f; color = Color.parseColor("#C4704F") })
+        y += 20f
+
+        val moisNom = moisNoms[fiche.mois - 1]
+        val cal = Calendar.getInstance()
+        cal.set(fiche.annee, fiche.mois - 1, 1)
+        val nbJours = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
+        val sdfDate = SimpleDateFormat("dd/MM/yyyy", Locale.FRENCH)
+        cal.set(fiche.annee, fiche.mois - 1, 1)
+        val dateDebut = sdfDate.format(cal.time)
+        cal.set(fiche.annee, fiche.mois - 1, nbJours)
+        val dateFin = sdfDate.format(cal.time)
+
+        val paintInfo = Paint().apply { color = Color.parseColor("#555555"); textSize = 12f }
+        canvas.drawText("Periode : du $dateDebut au $dateFin  ($moisNom ${fiche.annee})", 40f, y, paintInfo)
+        y += 18f
+        canvas.drawText("Employe : ${fiche.employee.nom} ${fiche.employee.prenom}", 40f, y, paintInfo.apply { isFakeBoldText = true })
+        y += 18f
+        canvas.drawText("Matricule : ${fiche.employee.matricule}     Poste : ${fiche.employee.poste}", 40f, y, paintInfo.apply { isFakeBoldText = false })
+        y += 28f
+
+        val col0 = 40f; val col1 = 180f; val col2 = 300f; val col3 = 420f; val col4 = 515f
+        val rowH = 22f
+
+        canvas.drawRect(col0, y - 16f, 555f, y + 6f, paintBgHeader)
+        canvas.drawText("Jour", col0 + 4f, y, paintHeader)
+        canvas.drawText("Arrivee", col1 + 4f, y, paintHeader)
+        canvas.drawText("Depart", col2 + 4f, y, paintHeader)
+        canvas.drawText("Duree", col3 + 4f, y, paintHeader)
+        y += rowH
+
+        val sdfTime = SimpleDateFormat("HH:mm", Locale.getDefault())
+        val sdfJour = SimpleDateFormat("EEE dd", Locale.FRENCH)
+
+        fiche.lignes.forEachIndexed { index, ligne ->
+            val bg = if (index % 2 == 0) paintBgRow else paintBgRowAlt
+            canvas.drawRect(col0, y - 14f, 555f, y + 6f, bg)
+            canvas.drawLine(col0, y + 6f, 555f, y + 6f, paintLine.apply { strokeWidth = 0.5f; color = Color.parseColor("#E0D0C8") })
+
+            canvas.drawText(sdfJour.format(Date(ligne.date)), col0 + 4f, y, paintCell)
+            canvas.drawText(ligne.arrivee?.let { sdfTime.format(Date(it)) } ?: "--:--", col1 + 4f, y, paintCell.apply { color = Color.parseColor("#4CAF50") })
+            canvas.drawText(ligne.depart?.let { sdfTime.format(Date(it)) } ?: "--:--", col2 + 4f, y, paintCell.apply { color = Color.parseColor("#F44336") })
+            if (ligne.dureeMinutes != null) {
+                val h = ligne.dureeMinutes / 60; val m = ligne.dureeMinutes % 60
+                canvas.drawText("${h}h${String.format("%02d", m)}", col3 + 4f, y, paintCell.apply { color = Color.parseColor("#333333") })
+            } else {
+                canvas.drawText("--", col3 + 4f, y, paintCell.apply { color = Color.parseColor("#999999") })
+            }
+            y += rowH
+            if (y > 800f) { /* simple single-page, stop if overflow */ return@forEachIndexed }
+        }
+
+        y += 10f
+        canvas.drawLine(40f, y, 555f, y, paintLine.apply { strokeWidth = 1.5f; color = Color.parseColor("#C4704F") })
+        y += 18f
+        val totalMinutes = fiche.lignes.sumOf { it.dureeMinutes ?: 0L }
+        val h = totalMinutes / 60; val m = totalMinutes % 60
+        canvas.drawText("Total heures travaillees : ${h}h ${String.format("%02d", m)}min", col0, y, paintTotal)
+
+        document.finishPage(page)
+
+        val nomFichier = "Fiche_${fiche.employee.matricule}_${moisNoms[fiche.mois - 1]}_${fiche.annee}.pdf"
+
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val values = ContentValues().apply {
+                    put(MediaStore.Downloads.DISPLAY_NAME, nomFichier)
+                    put(MediaStore.Downloads.MIME_TYPE, "application/pdf")
+                    put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+                }
+                val uri = requireContext().contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
+                uri?.let {
+                    requireContext().contentResolver.openOutputStream(it)?.use { os ->
+                        document.writeTo(os)
+                    }
+                    Toast.makeText(requireContext(), "PDF sauvegarde dans Telechargements:\n$nomFichier", Toast.LENGTH_LONG).show()
+                }
+            } else {
+                val dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                val file = File(dir, nomFichier)
+                FileOutputStream(file).use { document.writeTo(it) }
+                Toast.makeText(requireContext(), "PDF sauvegarde:\n${file.absolutePath}", Toast.LENGTH_LONG).show()
+            }
+        } catch (e: Exception) {
+            Toast.makeText(requireContext(), "Erreur PDF: ${e.message}", Toast.LENGTH_LONG).show()
+        } finally {
+            document.close()
         }
     }
 

@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:layout_margin="4dp"
     app:cardElevation="2dp"
-    app:cardCornerRadius="6dp">
+    app:cardCornerRadius="8dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -53,7 +53,7 @@
                 android:id="@+id/tv_biometrie_status"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 android:textStyle="bold"
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"
@@ -71,26 +71,15 @@
             android:layout_marginTop="8dp">
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_configurer_empreinte"
-                android:layout_width="0dp"
-                android:layout_height="36dp"
-                android:layout_weight="1"
-                android:text="Empreinte"
-                android:textSize="11sp"
-                android:layout_marginEnd="4dp"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                app:icon="@android:drawable/ic_menu_add" />
-
-            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_configurer_visage"
                 android:layout_width="0dp"
                 android:layout_height="36dp"
                 android:layout_weight="1"
-                android:text="Visage"
+                android:text="Enregistrer visage"
                 android:textSize="11sp"
-                android:layout_marginStart="4dp"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                app:icon="@android:drawable/ic_menu_camera" />
+                android:backgroundTint="@color/colorPrimary"
+                android:layout_marginEnd="8dp"
+                app:cornerRadius="8dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_reset_biometrie"
@@ -98,8 +87,8 @@
                 android:layout_height="36dp"
                 android:text="Reset"
                 android:textSize="11sp"
-                android:layout_marginStart="4dp"
-                style="@style/Widget.MaterialComponents.Button.TextButton" />
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:textColor="@color/depart_color" />
 
         </LinearLayout>
 
