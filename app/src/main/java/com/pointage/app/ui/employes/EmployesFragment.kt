@@ -50,10 +50,10 @@ class EmployesFragment : Fragment() {
             .setTitle("Ajouter un employe")
             .setView(dialogView)
             .setPositiveButton("Ajouter") { _, _ ->
-                val nom = dialogView.findViewById<EditText>(R.id.etNom).text.toString().trim()
-                val prenom = dialogView.findViewById<EditText>(R.id.etPrenom).text.toString().trim()
-                val matricule = dialogView.findViewById<EditText>(R.id.etMatricule).text.toString().trim()
-                val poste = dialogView.findViewById<EditText>(R.id.etPoste).text.toString().trim()
+                val nom = dialogView.findViewById<EditText>(R.id.et_nom).text.toString().trim()
+                val prenom = dialogView.findViewById<EditText>(R.id.et_prenom).text.toString().trim()
+                val matricule = dialogView.findViewById<EditText>(R.id.et_matricule).text.toString().trim()
+                val poste = dialogView.findViewById<EditText>(R.id.et_poste).text.toString().trim()
 
                 if (nom.isNotEmpty() && prenom.isNotEmpty() && matricule.isNotEmpty()) {
                     viewModel.ajouterEmployee(nom, prenom, matricule, poste)
