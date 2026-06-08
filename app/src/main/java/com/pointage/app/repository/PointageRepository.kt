@@ -2,6 +2,7 @@ package com.pointage.app.repository
 
 import com.pointage.app.data.AppDatabase
 import com.pointage.app.data.model.*
+import com.pointage.app.face.FaceNetHelper
 import com.pointage.app.face.FaceRecognitionHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -87,17 +88,25 @@ class PointageRepository(private val db: AppDatabase) {
     suspend fun identifierEtPointer(embedding: FloatArray): Triple<String?, TypePointage?, Float> = withContext(Dispatchers.IO) {
         val signatures = db.faceSignatureDao().getAllSignatures()
         if (signatures.isEmpty()) return@withContext Triple(null, null, 0f)
+        val useNeural = FaceNetHelper.isAvailable()
+        val threshold = if (useNeural) 0.40f else 0.50f
         var bestMatch: Long? = null
         var bestScore = 0f
         for (sig in signatures) {
-            val storedEmbedding = FaceRecognitionHelper.stringToEmbedding(sig.embedding)
-            val score = FaceRecognitionHelper.cosineSimilarity(embedding, storedEmbedding)
+            val storedEmbedding = if (useNeural)
+                FaceNetHelper.stringToEmbedding(sig.embedding)
+            else
+                FaceRecognitionHelper.stringToEmbedding(sig.embedding)
+            val score = if (useNeural)
+                FaceNetHelper.cosineSimilarity(embedding, storedEmbedding)
+            else
+                FaceRecognitionHelper.cosineSimilarity(embedding, storedEmbedding)
             if (score > bestScore) {
                 bestScore = score
                 bestMatch = sig.employeeId
             }
         }
-        if (bestScore < 0.50f || bestMatch == null) return@withContext Triple(null, null, bestScore)
+        if (bestScore < threshold || bestMatch == null) return@withContext Triple(null, null, bestScore)
         val employee = db.employeeDao().getEmployeeById(bestMatch) ?: return@withContext Triple(null, null, bestScore)
         val type = inscrirePointageInternal(bestMatch, MethodeAuthentification.VISAGE)
         Triple("${employee.prenom} ${employee.nom}", type, bestScore)

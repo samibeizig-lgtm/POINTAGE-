@@ -134,8 +134,12 @@ class FaceEnrollmentFragment : Fragment() {
                     return@addOnSuccessListener
                 }
                 val face = faces.maxByOrNull { it.boundingBox.width() * it.boundingBox.height() }!!
-                val embedding = FaceRecognitionHelper.extractEmbedding(rotated, face.boundingBox, face)
-                viewModel.enregistrerVisage(args.employeeId, FaceRecognitionHelper.embeddingToString(embedding))
+                val embeddingStr = if (FaceNetHelper.isAvailable()) {
+                    FaceNetHelper.embeddingToString(FaceNetHelper.getEmbedding(rotated, face.boundingBox, face))
+                } else {
+                    FaceRecognitionHelper.embeddingToString(FaceRecognitionHelper.extractEmbedding(rotated, face.boundingBox, face))
+                }
+                viewModel.enregistrerVisage(args.employeeId, embeddingStr)
                 activity?.runOnUiThread {
                     Toast.makeText(requireContext(), "Visage enregistre avec succes!", Toast.LENGTH_SHORT).show()
                     findNavController().popBackStack()
