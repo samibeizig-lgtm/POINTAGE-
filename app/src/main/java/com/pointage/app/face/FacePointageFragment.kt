@@ -89,8 +89,8 @@ class FacePointageFragment : Fragment() {
         viewModel.error.observe(viewLifecycleOwner) { error ->
             error ?: return@observe
             updateStatus(error, "#F44336")
-            pointageFait.set(false)
             viewModel.clearError()
+            binding.root.postDelayed({ pointageFait.set(false) }, 2000)
         }
 
         binding.btnRetour.setOnClickListener { findNavController().popBackStack() }

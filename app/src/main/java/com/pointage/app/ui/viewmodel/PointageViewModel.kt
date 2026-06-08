@@ -95,6 +95,8 @@ class PointageViewModel(application: Application) : AndroidViewModel(application
                 val result = repository.identifierEtPointer(embedding)
                 if (result != null) {
                     _facePointageResult.value = result
+                } else {
+                    _error.value = "Visage non reconnu"
                 }
             } catch (e: Exception) {
                 _error.value = "Erreur reconnaissance: ${e.message}"
