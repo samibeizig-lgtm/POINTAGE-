@@ -14,13 +14,27 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Regardez la camera pour pointer"
+        android:text="NEXSTAY — Reconnaissance faciale"
         android:textColor="#FFFFFF"
-        android:textSize="18sp"
+        android:textSize="16sp"
+        android:textStyle="bold"
         android:gravity="center"
-        android:padding="16dp"
-        android:background="#88000000"
+        android:padding="14dp"
+        android:background="#CC000000"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_statut"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Approchez votre visage de la camera..."
+        android:textColor="#FFFFFF"
+        android:textSize="15sp"
+        android:gravity="center"
+        android:padding="14dp"
+        android:background="#AA000000"
+        app:layout_constraintBottom_toTopOf="@id/tv_resultat_face"
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
@@ -31,21 +45,20 @@
         android:textSize="20sp"
         android:textStyle="bold"
         android:gravity="center"
-        android:padding="16dp"
-        android:background="#CC000000"
+        android:padding="18dp"
+        android:background="#DD000000"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@id/btn_retour"
         app:layout_constraintStart_toStartOf="parent" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_retour"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Retour"
         android:layout_margin="16dp"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:textColor="#FFFFFF"
-        app:strokeColor="#FFFFFF"
+        android:backgroundTint="#C4704F"
+        app:cornerRadius="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 

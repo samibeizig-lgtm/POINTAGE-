@@ -42,8 +42,9 @@ class FaceEnrollmentFragment : Fragment() {
 
     private val faceDetector = FaceDetection.getClient(
         FaceDetectorOptions.Builder()
-            .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
-            .setMinFaceSize(0.25f)
+            .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
+            .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_ALL)
+            .setMinFaceSize(0.20f)
             .build()
     )
 
@@ -133,7 +134,7 @@ class FaceEnrollmentFragment : Fragment() {
                     return@addOnSuccessListener
                 }
                 val face = faces.maxByOrNull { it.boundingBox.width() * it.boundingBox.height() }!!
-                val embedding = FaceRecognitionHelper.extractEmbedding(rotated, face.boundingBox)
+                val embedding = FaceRecognitionHelper.extractEmbedding(rotated, face.boundingBox, face)
                 viewModel.enregistrerVisage(args.employeeId, FaceRecognitionHelper.embeddingToString(embedding))
                 activity?.runOnUiThread {
                     Toast.makeText(requireContext(), "Visage enregistre avec succes!", Toast.LENGTH_SHORT).show()

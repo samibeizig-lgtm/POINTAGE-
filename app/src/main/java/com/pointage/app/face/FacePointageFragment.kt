@@ -40,12 +40,14 @@ class FacePointageFragment : Fragment() {
     private lateinit var cameraExecutor: ExecutorService
     private val isProcessing = AtomicBoolean(false)
     private var lastRecognitionTime = 0L
-    private val RECOGNITION_COOLDOWN_MS = 3000L
+    private val RECOGNITION_COOLDOWN_MS = 2000L
+    private var framesWithFace = 0
 
     private val faceDetector = FaceDetection.getClient(
         FaceDetectorOptions.Builder()
-            .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
-            .setMinFaceSize(0.2f)
+            .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
+            .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_ALL)
+            .setMinFaceSize(0.15f)
             .build()
     )
 
@@ -78,19 +80,24 @@ class FacePointageFragment : Fragment() {
         viewModel.facePointageResult.observe(viewLifecycleOwner) { result ->
             result ?: return@observe
             val typeStr = if (result.second == TypePointage.ARRIVEE) "ARRIVEE" else "DEPART"
-            binding.tvResultatFace.text = "OK ${result.first} - $typeStr"
-            binding.tvResultatFace.visibility = View.VISIBLE
+            updateStatus("✓ ${result.first}  —  $typeStr", "#4CAF50")
             viewModel.clearFacePointageResult()
         }
 
         viewModel.error.observe(viewLifecycleOwner) { error ->
             error ?: return@observe
-            Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
+            updateStatus(error, "#F44336")
             viewModel.clearError()
         }
 
-        binding.btnRetour.setOnClickListener {
-            findNavController().popBackStack()
+        binding.btnRetour.setOnClickListener { findNavController().popBackStack() }
+    }
+
+    private fun updateStatus(msg: String, colorHex: String) {
+        activity?.runOnUiThread {
+            binding.tvStatut.text = msg
+            binding.tvStatut.setTextColor(android.graphics.Color.parseColor(colorHex))
+            binding.tvStatut.visibility = View.VISIBLE
         }
     }
 
@@ -122,7 +129,7 @@ class FacePointageFragment : Fragment() {
                     cameraProvider.unbindAll()
                     cameraProvider.bindToLifecycle(viewLifecycleOwner, CameraSelector.DEFAULT_BACK_CAMERA, preview, imageAnalyzer)
                 } catch (ex: Exception) {
-                    Toast.makeText(requireContext(), "Erreur camera: ${ex.message}", Toast.LENGTH_SHORT).show()
+                    updateStatus("Erreur camera: ${ex.message}", "#F44336")
                 }
             }
         }, ContextCompat.getMainExecutor(requireContext()))
@@ -137,15 +144,23 @@ class FacePointageFragment : Fragment() {
         val inputImage = InputImage.fromBitmap(rotated, 0)
         faceDetector.process(inputImage)
             .addOnSuccessListener { faces ->
-                if (faces.isNotEmpty()) {
+                if (faces.isEmpty()) {
+                    framesWithFace = 0
+                    updateStatus("Approchez votre visage de la camera...", "#FFFFFF")
+                } else {
+                    framesWithFace++
+                    updateStatus("Visage detecte — analyse...", "#FFD5C0")
                     val face = faces.maxByOrNull { it.boundingBox.width() * it.boundingBox.height() }!!
-                    val embedding = FaceRecognitionHelper.extractEmbedding(rotated, face.boundingBox)
+                    val embedding = FaceRecognitionHelper.extractEmbedding(rotated, face.boundingBox, face)
                     viewModel.identifierEtPointerParVisage(embedding)
                     lastRecognitionTime = System.currentTimeMillis()
                 }
                 isProcessing.set(false)
             }
-            .addOnFailureListener { isProcessing.set(false) }
+            .addOnFailureListener {
+                updateStatus("Erreur detection: ${it.message}", "#F44336")
+                isProcessing.set(false)
+            }
     }
 
     override fun onDestroyView() {
@@ -169,7 +184,7 @@ class FacePointageFragment : Fragment() {
             uBuffer.get(nv21, ySize + vSize, uSize)
             val yuvImage = YuvImage(nv21, ImageFormat.NV21, width, height, null)
             val out = ByteArrayOutputStream()
-            yuvImage.compressToJpeg(Rect(0, 0, width, height), 90, out)
+            yuvImage.compressToJpeg(Rect(0, 0, width, height), 92, out)
             BitmapFactory.decodeByteArray(out.toByteArray(), 0, out.size())
         } catch (e: Exception) { null }
     }

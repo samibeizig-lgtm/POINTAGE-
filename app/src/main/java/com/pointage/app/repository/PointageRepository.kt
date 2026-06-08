@@ -96,7 +96,7 @@ class PointageRepository(private val db: AppDatabase) {
                 bestMatch = sig.employeeId
             }
         }
-        if (bestScore < 0.82f || bestMatch == null) return@withContext null
+        if (bestScore < 0.65f || bestMatch == null) return@withContext null
         val employee = db.employeeDao().getEmployeeById(bestMatch) ?: return@withContext null
         val type = inscrirePointageInternal(bestMatch, MethodeAuthentification.VISAGE)
         Pair("${employee.prenom} ${employee.nom}", type)
