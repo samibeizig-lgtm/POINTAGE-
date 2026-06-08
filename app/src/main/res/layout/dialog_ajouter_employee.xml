@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <EditText
+        android:id="@+id/et_nom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Nom *"
+        android:layout_marginBottom="8dp" />
+
+    <EditText
+        android:id="@+id/et_prenom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Prenom *"
+        android:layout_marginBottom="8dp" />
+
+    <EditText
+        android:id="@+id/et_matricule"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Matricule *"
+        android:layout_marginBottom="8dp" />
+
+    <EditText
+        android:id="@+id/et_poste"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Poste / Fonction" />
+
+</LinearLayout>

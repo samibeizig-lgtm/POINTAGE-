@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/nav_pointage">
+
+    <fragment
+        android:id="@+id/nav_pointage"
+        android:name="com.pointage.app.ui.pointage.PointageFragment"
+        android:label="Pointage" />
+
+    <fragment
+        android:id="@+id/nav_historique"
+        android:name="com.pointage.app.ui.historique.HistoriqueFragment"
+        android:label="Historique du jour" />
+
+    <fragment
+        android:id="@+id/nav_employes"
+        android:name="com.pointage.app.ui.employes.EmployesFragment"
+        android:label="Employes" />
+
+    <fragment
+        android:id="@+id/nav_fiche"
+        android:name="com.pointage.app.ui.fiche.FichePresenceFragment"
+        android:label="Fiche de presence" />
+
+</navigation>

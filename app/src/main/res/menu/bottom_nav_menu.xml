@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_pointage"
+        android:icon="@android:drawable/ic_menu_recent_history"
+        android:title="Pointer" />
+
+    <item
+        android:id="@+id/nav_historique"
+        android:icon="@android:drawable/ic_menu_my_calendar"
+        android:title="Aujourd'hui" />
+
+    <item
+        android:id="@+id/nav_employes"
+        android:icon="@android:drawable/ic_menu_manage"
+        android:title="Employes" />
+
+    <item
+        android:id="@+id/nav_fiche"
+        android:icon="@android:drawable/ic_menu_agenda"
+        android:title="Fiche" />
+
+</menu>
