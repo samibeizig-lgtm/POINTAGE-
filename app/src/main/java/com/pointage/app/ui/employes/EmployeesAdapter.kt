@@ -12,7 +12,9 @@ import com.pointage.app.databinding.ItemEmployeeBinding
 
 class EmployeesAdapter(
     private val onConfigurerVisage: (Employee) -> Unit,
-    private val onResetBiometrie: (Employee) -> Unit
+    private val onResetBiometrie: (Employee) -> Unit,
+    private val onModifier: (Employee) -> Unit,
+    private val onSupprimer: (Employee) -> Unit
 ) : ListAdapter<Employee, EmployeesAdapter.ViewHolder>(DiffCallback()) {
 
     inner class ViewHolder(private val binding: ItemEmployeeBinding) : RecyclerView.ViewHolder(binding.root) {
@@ -31,6 +33,8 @@ class EmployeesAdapter(
 
             binding.btnConfigurerVisage.setOnClickListener { onConfigurerVisage(employee) }
             binding.btnResetBiometrie.setOnClickListener { onResetBiometrie(employee) }
+            binding.btnModifier.setOnClickListener { onModifier(employee) }
+            binding.btnSupprimer.setOnClickListener { onSupprimer(employee) }
         }
     }
 

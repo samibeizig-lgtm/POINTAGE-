@@ -29,5 +29,5 @@ enum class TypePointage {
 }
 
 enum class MethodeAuthentification {
-    EMPREINTE, VISAGE
+    EMPREINTE, VISAGE, MANUEL
 }

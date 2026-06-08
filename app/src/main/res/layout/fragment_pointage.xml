@@ -51,6 +51,60 @@
             android:layout_marginBottom="16dp"
             android:visibility="gone" />
 
+        <!-- Bouton reconnaissance faciale élégant -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardElevation="6dp"
+            app:cardCornerRadius="16dp"
+            app:cardBackgroundColor="@color/colorPrimary">
+
+            <LinearLayout
+                android:id="@+id/btn_visage_custom"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground"
+                android:padding="16dp">
+
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/ic_face"
+                    android:layout_marginEnd="16dp" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Reconnaissance faciale"
+                        android:textColor="#FFFFFF"
+                        android:textSize="17sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Pointage par visage"
+                        android:textColor="#FFD5C0"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Carte pointage manuel -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -68,7 +122,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Selectionner un employe"
+                    android:text="Pointage manuel"
                     android:textSize="13sp"
                     android:textColor="#757575"
                     android:layout_marginBottom="6dp" />
@@ -76,21 +130,23 @@
                 <Spinner
                     android:id="@+id/spinner_employee"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_pointage_manuel"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="Enregistrer le pointage"
+                    android:textSize="14sp"
+                    android:backgroundTint="#8D6E63"
+                    app:cornerRadius="10dp"
+                    app:icon="@android:drawable/ic_menu_recent_history"
+                    app:iconGravity="textStart" />
 
             </LinearLayout>
 
         </androidx.cardview.widget.CardView>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_visage_custom"
-            android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:text="Pointer par reconnaissance faciale"
-            android:textSize="16sp"
-            android:backgroundTint="@color/colorPrimary"
-            android:layout_marginBottom="16dp"
-            app:cornerRadius="12dp" />
 
         <androidx.cardview.widget.CardView
             android:id="@+id/card_resultat"

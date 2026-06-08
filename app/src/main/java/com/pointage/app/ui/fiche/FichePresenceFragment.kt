@@ -93,6 +93,7 @@ class FichePresenceFragment : Fragment() {
             }
             val mois = binding.spinnerMois.selectedItemPosition + 1
             val annee = annees[binding.spinnerAnnee.selectedItemPosition].toInt()
+            viewModel.clearFichePresence()
             viewModel.chargerFichePresence(employeesList[position].id, mois, annee)
         }
 
@@ -159,32 +160,51 @@ class FichePresenceFragment : Fragment() {
         val sdfTime = SimpleDateFormat("HH:mm", Locale.getDefault())
         val sdfJour = SimpleDateFormat("EEE dd", Locale.FRENCH)
 
-        fiche.lignes.forEachIndexed { index, ligne ->
-            val bg = if (index % 2 == 0) paintBgRow else paintBgRowAlt
-            canvas.drawRect(col0, y - 14f, 555f, y + 6f, bg)
-            canvas.drawLine(col0, y + 6f, 555f, y + 6f, paintLine.apply { strokeWidth = 0.5f; color = Color.parseColor("#E0D0C8") })
+        var currentPage = page
+        var currentCanvas = canvas
 
-            canvas.drawText(sdfJour.format(Date(ligne.date)), col0 + 4f, y, paintCell)
-            canvas.drawText(ligne.arrivee?.let { sdfTime.format(Date(it)) } ?: "--:--", col1 + 4f, y, paintCell.apply { color = Color.parseColor("#4CAF50") })
-            canvas.drawText(ligne.depart?.let { sdfTime.format(Date(it)) } ?: "--:--", col2 + 4f, y, paintCell.apply { color = Color.parseColor("#F44336") })
+        fiche.lignes.forEachIndexed { index, ligne ->
+            // Nouvelle page si on dépasse la limite
+            if (y > 810f) {
+                currentCanvas.drawLine(40f, y - 4f, 555f, y - 4f, paintLine.apply { strokeWidth = 1f; color = Color.parseColor("#C4704F") })
+                document.finishPage(currentPage)
+                val nextPageInfo = PdfDocument.PageInfo.Builder(595, 842, document.pages.size + 1).create()
+                currentPage = document.startPage(nextPageInfo)
+                currentCanvas = currentPage.canvas
+                // Re-dessiner l'entête du tableau sur la nouvelle page
+                y = 40f
+                currentCanvas.drawRect(col0, y - 16f, 555f, y + 6f, paintBgHeader)
+                currentCanvas.drawText("Jour", col0 + 4f, y, paintHeader)
+                currentCanvas.drawText("Arrivee", col1 + 4f, y, paintHeader)
+                currentCanvas.drawText("Depart", col2 + 4f, y, paintHeader)
+                currentCanvas.drawText("Duree", col3 + 4f, y, paintHeader)
+                y += rowH
+            }
+
+            val bg = if (index % 2 == 0) paintBgRow else paintBgRowAlt
+            currentCanvas.drawRect(col0, y - 14f, 555f, y + 6f, bg)
+            currentCanvas.drawLine(col0, y + 6f, 555f, y + 6f, paintLine.apply { strokeWidth = 0.5f; color = Color.parseColor("#E0D0C8") })
+
+            currentCanvas.drawText(sdfJour.format(Date(ligne.date)), col0 + 4f, y, paintCell)
+            currentCanvas.drawText(ligne.arrivee?.let { sdfTime.format(Date(it)) } ?: "--:--", col1 + 4f, y, paintCell.apply { color = Color.parseColor("#4CAF50") })
+            currentCanvas.drawText(ligne.depart?.let { sdfTime.format(Date(it)) } ?: "--:--", col2 + 4f, y, paintCell.apply { color = Color.parseColor("#F44336") })
             if (ligne.dureeMinutes != null) {
                 val h = ligne.dureeMinutes / 60; val m = ligne.dureeMinutes % 60
-                canvas.drawText("${h}h${String.format("%02d", m)}", col3 + 4f, y, paintCell.apply { color = Color.parseColor("#333333") })
+                currentCanvas.drawText("${h}h${String.format("%02d", m)}", col3 + 4f, y, paintCell.apply { color = Color.parseColor("#333333") })
             } else {
-                canvas.drawText("--", col3 + 4f, y, paintCell.apply { color = Color.parseColor("#999999") })
+                currentCanvas.drawText("--", col3 + 4f, y, paintCell.apply { color = Color.parseColor("#999999") })
             }
             y += rowH
-            if (y > 800f) { /* simple single-page, stop if overflow */ return@forEachIndexed }
         }
 
         y += 10f
-        canvas.drawLine(40f, y, 555f, y, paintLine.apply { strokeWidth = 1.5f; color = Color.parseColor("#C4704F") })
+        currentCanvas.drawLine(40f, y, 555f, y, paintLine.apply { strokeWidth = 1.5f; color = Color.parseColor("#C4704F") })
         y += 18f
         val totalMinutes = fiche.lignes.sumOf { it.dureeMinutes ?: 0L }
         val h = totalMinutes / 60; val m = totalMinutes % 60
-        canvas.drawText("Total heures travaillees : ${h}h ${String.format("%02d", m)}min", col0, y, paintTotal)
+        currentCanvas.drawText("Total heures travaillees : ${h}h ${String.format("%02d", m)}min", col0, y, paintTotal)
 
-        document.finishPage(page)
+        document.finishPage(currentPage)
 
         val nomFichier = "Fiche_${fiche.employee.matricule}_${moisNoms[fiche.mois - 1]}_${fiche.annee}.pdf"
 

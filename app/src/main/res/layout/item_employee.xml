@@ -64,6 +64,7 @@
 
         </LinearLayout>
 
+        <!-- Ligne 1 : Enregistrer visage + Reset -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -78,7 +79,7 @@
                 android:text="Enregistrer visage"
                 android:textSize="11sp"
                 android:backgroundTint="@color/colorPrimary"
-                android:layout_marginEnd="8dp"
+                android:layout_marginEnd="4dp"
                 app:cornerRadius="8dp" />
 
             <com.google.android.material.button.MaterialButton
@@ -89,6 +90,39 @@
                 android:textSize="11sp"
                 style="@style/Widget.MaterialComponents.Button.TextButton"
                 android:textColor="@color/depart_color" />
+
+        </LinearLayout>
+
+        <!-- Ligne 2 : Modifier + Supprimer -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="4dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_modifier"
+                android:layout_width="0dp"
+                android:layout_height="34dp"
+                android:layout_weight="1"
+                android:text="Modifier"
+                android:textSize="11sp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:textColor="#555555"
+                android:layout_marginEnd="4dp"
+                app:strokeColor="#CCCCCC"
+                app:cornerRadius="8dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_supprimer"
+                android:layout_width="0dp"
+                android:layout_height="34dp"
+                android:layout_weight="1"
+                android:text="Supprimer"
+                android:textSize="11sp"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:textColor="#F44336"
+                app:cornerRadius="8dp" />
 
         </LinearLayout>
 

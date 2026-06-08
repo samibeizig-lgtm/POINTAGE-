@@ -131,6 +131,22 @@ class PointageViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    fun supprimerEmployee(employeeId: Long) {
+        viewModelScope.launch {
+            try { repository.supprimerEmployee(employeeId) }
+            catch (e: Exception) { _error.value = "Erreur suppression: ${e.message}" }
+        }
+    }
+
+    fun modifierEmployee(employee: com.pointage.app.data.model.Employee) {
+        viewModelScope.launch {
+            try { repository.modifierEmployee(employee) }
+            catch (e: Exception) { _error.value = "Erreur modification: ${e.message}" }
+        }
+    }
+
+    fun clearFichePresence() { _fichePresence.value = null }
+
     fun getPointagesDuJour(): LiveData<List<Pointage>> {
         val cal = Calendar.getInstance()
         cal.set(Calendar.HOUR_OF_DAY, 0); cal.set(Calendar.MINUTE, 0); cal.set(Calendar.SECOND, 0); cal.set(Calendar.MILLISECOND, 0)
