@@ -39,9 +39,10 @@ class FacePointageFragment : Fragment() {
 
     private lateinit var cameraExecutor: ExecutorService
     private val isProcessing = AtomicBoolean(false)
+    private val pointageFait = AtomicBoolean(false)
     private var lastRecognitionTime = 0L
-    private val RECOGNITION_COOLDOWN_MS = 2000L
     private var framesWithFace = 0
+    private val RECOGNITION_COOLDOWN_MS = 2000L
 
     private val faceDetector = FaceDetection.getClient(
         FaceDetectorOptions.Builder()
@@ -82,11 +83,13 @@ class FacePointageFragment : Fragment() {
             val typeStr = if (result.second == TypePointage.ARRIVEE) "ARRIVEE" else "DEPART"
             updateStatus("✓ ${result.first}  —  $typeStr", "#4CAF50")
             viewModel.clearFacePointageResult()
+            binding.root.postDelayed({ findNavController().popBackStack() }, 2500)
         }
 
         viewModel.error.observe(viewLifecycleOwner) { error ->
             error ?: return@observe
             updateStatus(error, "#F44336")
+            pointageFait.set(false)
             viewModel.clearError()
         }
 
@@ -150,9 +153,12 @@ class FacePointageFragment : Fragment() {
                 } else {
                     framesWithFace++
                     updateStatus("Visage detecte — analyse...", "#FFD5C0")
-                    val face = faces.maxByOrNull { it.boundingBox.width() * it.boundingBox.height() }!!
-                    val embedding = FaceRecognitionHelper.extractEmbedding(rotated, face.boundingBox, face)
-                    viewModel.identifierEtPointerParVisage(embedding)
+                    if (!pointageFait.get()) {
+                        val face = faces.maxByOrNull { it.boundingBox.width() * it.boundingBox.height() }!!
+                        val embedding = FaceRecognitionHelper.extractEmbedding(rotated, face.boundingBox, face)
+                        pointageFait.set(true)
+                        viewModel.identifierEtPointerParVisage(embedding)
+                    }
                     lastRecognitionTime = System.currentTimeMillis()
                 }
                 isProcessing.set(false)
