@@ -135,16 +135,21 @@ class FaceEnrollmentFragment : Fragment() {
                     return@addOnSuccessListener
                 }
                 val face = faces.maxByOrNull { it.boundingBox.width() * it.boundingBox.height() }!!
-                val geomEmbedding = GeometricFaceHelper.extractEmbedding(face)
-                if (geomEmbedding == null) {
-                    isCapturing = false
-                    activity?.runOnUiThread {
-                        binding.tvInstruction.text = "Visage pas assez visible. Rapprochez-vous."
-                        binding.btnCapture.isEnabled = true
+                val embeddingStr = if (FaceNetHelper.isAvailable()) {
+                    FaceNetHelper.embeddingToString(FaceNetHelper.getEmbedding(rotated, face.boundingBox, face))
+                } else {
+                    val geom = GeometricFaceHelper.extractEmbedding(face)
+                    if (geom == null) {
+                        isCapturing = false
+                        activity?.runOnUiThread {
+                            binding.tvInstruction.text = "Visage pas assez visible. Rapprochez-vous."
+                            binding.btnCapture.isEnabled = true
+                        }
+                        return@addOnSuccessListener
                     }
-                    return@addOnSuccessListener
+                    GeometricFaceHelper.embeddingToString(geom)
                 }
-                viewModel.enregistrerVisage(args.employeeId, GeometricFaceHelper.embeddingToString(geomEmbedding))
+                viewModel.enregistrerVisage(args.employeeId, embeddingStr)
                 activity?.runOnUiThread {
                     Toast.makeText(requireContext(), "Visage enregistre avec succes!", Toast.LENGTH_SHORT).show()
                     findNavController().popBackStack()

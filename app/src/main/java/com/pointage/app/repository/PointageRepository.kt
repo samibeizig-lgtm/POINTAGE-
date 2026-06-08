@@ -2,6 +2,7 @@ package com.pointage.app.repository
 
 import com.pointage.app.data.AppDatabase
 import com.pointage.app.data.model.*
+import com.pointage.app.face.FaceNetHelper
 import com.pointage.app.face.GeometricFaceHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -87,15 +88,23 @@ class PointageRepository(private val db: AppDatabase) {
     suspend fun identifierEtPointer(embedding: FloatArray): Triple<String?, TypePointage?, Float> = withContext(Dispatchers.IO) {
         val signatures = db.faceSignatureDao().getAllSignatures()
         if (signatures.isEmpty()) return@withContext Triple(null, null, 0f)
+        val useNeural = FaceNetHelper.isAvailable()
+        val threshold = if (useNeural) 0.60f else 0.90f
         var bestMatch: Long? = null
         var bestScore = 0f
         for (sig in signatures) {
-            val stored = GeometricFaceHelper.stringToEmbedding(sig.embedding)
+            val stored = if (useNeural)
+                FaceNetHelper.stringToEmbedding(sig.embedding)
+            else
+                GeometricFaceHelper.stringToEmbedding(sig.embedding)
             if (stored.size != embedding.size) continue
-            val score = GeometricFaceHelper.cosineSimilarity(embedding, stored)
+            val score = if (useNeural)
+                FaceNetHelper.cosineSimilarity(embedding, stored)
+            else
+                GeometricFaceHelper.cosineSimilarity(embedding, stored)
             if (score > bestScore) { bestScore = score; bestMatch = sig.employeeId }
         }
-        if (bestScore < 0.90f || bestMatch == null) return@withContext Triple(null, null, bestScore)
+        if (bestScore < threshold || bestMatch == null) return@withContext Triple(null, null, bestScore)
         val employee = db.employeeDao().getEmployeeById(bestMatch) ?: return@withContext Triple(null, null, bestScore)
         val type = inscrirePointageInternal(bestMatch, MethodeAuthentification.VISAGE)
         Triple("${employee.prenom} ${employee.nom}", type, bestScore)

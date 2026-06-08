@@ -20,9 +20,9 @@ import kotlin.math.atan2
 
 object FaceNetHelper {
 
-    private const val INPUT_SIZE = 112
+    private const val INPUT_SIZE = 160   // FaceNet attend 160x160
     private const val EMBEDDING_SIZE = 128
-    private const val MODEL_FILE = "mobile_face_net.tflite"
+    private const val MODEL_FILE = "facenet.tflite"
 
     private var interpreter: Interpreter? = null
     private var initialized = false

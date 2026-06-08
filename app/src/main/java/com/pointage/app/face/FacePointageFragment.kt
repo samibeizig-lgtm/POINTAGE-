@@ -25,6 +25,7 @@ import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
 import com.pointage.app.data.model.TypePointage
 import com.pointage.app.databinding.FragmentFacePointageBinding
+import com.pointage.app.face.FaceNetHelper
 import com.pointage.app.ui.viewmodel.PointageViewModel
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.ExecutorService
@@ -174,12 +175,15 @@ class FacePointageFragment : Fragment() {
                 } else {
                     updateStatus("Visage detecte — analyse...", "#FFD5C0")
                     val face = faces.maxByOrNull { it.boundingBox.width() * it.boundingBox.height() }!!
-                    val embedding = GeometricFaceHelper.extractEmbedding(face)
+                    val embedding = if (FaceNetHelper.isAvailable()) {
+                        FaceNetHelper.getEmbedding(rotated, face.boundingBox, face)
+                    } else {
+                        GeometricFaceHelper.extractEmbedding(face)
+                    }
                     if (embedding == null) {
                         updateStatus("Rapprochez-vous de la camera...", "#FFFFFF")
                         processing.set(false)
                     } else {
-                        // processing reste à true jusqu'au retour du ViewModel
                         viewModel.identifierEtPointerParVisage(embedding)
                     }
                 }
