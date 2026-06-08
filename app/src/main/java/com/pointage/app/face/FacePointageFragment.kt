@@ -24,7 +24,6 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
 import com.pointage.app.data.model.TypePointage
-import com.pointage.app.face.FaceNetHelper
 import com.pointage.app.databinding.FragmentFacePointageBinding
 import com.pointage.app.ui.viewmodel.PointageViewModel
 import java.io.ByteArrayOutputStream
@@ -49,6 +48,7 @@ class FacePointageFragment : Fragment() {
         FaceDetectorOptions.Builder()
             .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
             .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_ALL)
+            .setContourMode(FaceDetectorOptions.CONTOUR_MODE_ALL)
             .setMinFaceSize(0.15f)
             .build()
     )
@@ -174,12 +174,14 @@ class FacePointageFragment : Fragment() {
                 } else {
                     updateStatus("Visage detecte — analyse...", "#FFD5C0")
                     val face = faces.maxByOrNull { it.boundingBox.width() * it.boundingBox.height() }!!
-                    val embedding = if (FaceNetHelper.isAvailable())
-                        FaceNetHelper.getEmbedding(rotated, face.boundingBox, face)
-                    else
-                        FaceRecognitionHelper.extractEmbedding(rotated, face.boundingBox, face)
-                    // processing reste à true jusqu'au retour du ViewModel
-                    viewModel.identifierEtPointerParVisage(embedding)
+                    val embedding = GeometricFaceHelper.extractEmbedding(face)
+                    if (embedding == null) {
+                        updateStatus("Rapprochez-vous de la camera...", "#FFFFFF")
+                        processing.set(false)
+                    } else {
+                        // processing reste à true jusqu'au retour du ViewModel
+                        viewModel.identifierEtPointerParVisage(embedding)
+                    }
                 }
             }
             .addOnFailureListener {
