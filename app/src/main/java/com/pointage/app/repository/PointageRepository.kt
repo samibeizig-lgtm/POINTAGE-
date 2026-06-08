@@ -89,7 +89,7 @@ class PointageRepository(private val db: AppDatabase) {
         val signatures = db.faceSignatureDao().getAllSignatures()
         if (signatures.isEmpty()) return@withContext Triple(null, null, 0f)
         val useNeural = FaceNetHelper.isAvailable()
-        val threshold = if (useNeural) 0.60f else 0.90f
+        val threshold = if (useNeural) 0.55f else 0.90f
         var bestMatch: Long? = null
         var bestScore = 0f
         for (sig in signatures) {

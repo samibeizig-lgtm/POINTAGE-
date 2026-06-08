@@ -29,6 +29,7 @@ import com.pointage.app.ui.viewmodel.PointageViewModel
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicInteger
 
 class FaceEnrollmentFragment : Fragment() {
 
@@ -38,6 +39,10 @@ class FaceEnrollmentFragment : Fragment() {
     private val args: FaceEnrollmentFragmentArgs by navArgs()
 
     private lateinit var cameraExecutor: ExecutorService
+
+    private val CAPTURES_NEEDED = 5
+    private val captureCount = AtomicInteger(0)
+    private val collectedEmbeddings = mutableListOf<FloatArray>()
     private var isCapturing = false
 
     private val faceDetector = FaceDetection.getClient(
@@ -78,14 +83,14 @@ class FaceEnrollmentFragment : Fragment() {
         binding.btnCapture.setOnClickListener {
             if (!isCapturing) {
                 isCapturing = true
-                binding.tvInstruction.text = "Capture en cours..."
+                captureCount.set(0)
+                collectedEmbeddings.clear()
+                binding.tvInstruction.text = "Capture 0 / $CAPTURES_NEEDED — gardez le visage visible..."
                 binding.btnCapture.isEnabled = false
             }
         }
 
-        binding.btnAnnuler.setOnClickListener {
-            findNavController().popBackStack()
-        }
+        binding.btnAnnuler.setOnClickListener { findNavController().popBackStack() }
     }
 
     private fun startCamera() {
@@ -127,32 +132,39 @@ class FaceEnrollmentFragment : Fragment() {
         faceDetector.process(inputImage)
             .addOnSuccessListener { faces ->
                 if (faces.isEmpty()) {
-                    isCapturing = false
                     activity?.runOnUiThread {
-                        binding.tvInstruction.text = "Aucun visage detecte. Appuyez sur Capturer."
-                        binding.btnCapture.isEnabled = true
+                        binding.tvInstruction.text = "Aucun visage. Placez-vous face a la camera."
                     }
                     return@addOnSuccessListener
                 }
+
                 val face = faces.maxByOrNull { it.boundingBox.width() * it.boundingBox.height() }!!
-                val embeddingStr = if (FaceNetHelper.isAvailable()) {
-                    FaceNetHelper.embeddingToString(FaceNetHelper.getEmbedding(rotated, face.boundingBox, face))
+                val embedding = if (FaceNetHelper.isAvailable()) {
+                    FaceNetHelper.getEmbedding(rotated, face.boundingBox, face)
                 } else {
-                    val geom = GeometricFaceHelper.extractEmbedding(face)
-                    if (geom == null) {
-                        isCapturing = false
-                        activity?.runOnUiThread {
-                            binding.tvInstruction.text = "Visage pas assez visible. Rapprochez-vous."
-                            binding.btnCapture.isEnabled = true
-                        }
-                        return@addOnSuccessListener
-                    }
-                    GeometricFaceHelper.embeddingToString(geom)
+                    GeometricFaceHelper.extractEmbedding(face) ?: return@addOnSuccessListener
                 }
-                viewModel.enregistrerVisage(args.employeeId, embeddingStr)
+
+                synchronized(collectedEmbeddings) {
+                    collectedEmbeddings.add(embedding)
+                }
+                val count = captureCount.incrementAndGet()
                 activity?.runOnUiThread {
-                    Toast.makeText(requireContext(), "Visage enregistre avec succes!", Toast.LENGTH_SHORT).show()
-                    findNavController().popBackStack()
+                    binding.tvInstruction.text = "Capture $count / $CAPTURES_NEEDED — bougez legerement la tete..."
+                }
+
+                if (count >= CAPTURES_NEEDED) {
+                    isCapturing = false
+                    val averaged = averageEmbeddings(collectedEmbeddings)
+                    val embeddingStr = if (FaceNetHelper.isAvailable())
+                        FaceNetHelper.embeddingToString(averaged)
+                    else
+                        GeometricFaceHelper.embeddingToString(averaged)
+                    viewModel.enregistrerVisage(args.employeeId, embeddingStr)
+                    activity?.runOnUiThread {
+                        Toast.makeText(requireContext(), "Visage enregistre avec succes!", Toast.LENGTH_SHORT).show()
+                        findNavController().popBackStack()
+                    }
                 }
             }
             .addOnFailureListener {
@@ -162,6 +174,21 @@ class FaceEnrollmentFragment : Fragment() {
                     binding.btnCapture.isEnabled = true
                 }
             }
+    }
+
+    private fun averageEmbeddings(embeddings: List<FloatArray>): FloatArray {
+        if (embeddings.isEmpty()) return FloatArray(0)
+        val size = embeddings[0].size
+        val avg = FloatArray(size)
+        for (emb in embeddings) {
+            for (i in 0 until size) avg[i] += emb[i]
+        }
+        for (i in 0 until size) avg[i] /= embeddings.size
+        // Re-normaliser après la moyenne
+        var norm = 0f
+        for (v in avg) norm += v * v
+        norm = kotlin.math.sqrt(norm)
+        return if (norm > 0f) FloatArray(size) { avg[it] / norm } else avg
     }
 
     override fun onDestroyView() {
