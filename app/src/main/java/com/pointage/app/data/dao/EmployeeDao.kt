@@ -26,4 +26,7 @@ interface EmployeeDao {
 
     @Query("UPDATE employees SET actif = 0 WHERE id = :id")
     suspend fun deactivate(id: Long)
+
+    @Query("UPDATE employees SET biometrieConfiguree = :active, methodeAuth = :methode WHERE id = :id")
+    suspend fun updateBiometrie(id: Long, active: Boolean, methode: String)
 }

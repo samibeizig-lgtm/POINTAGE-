@@ -66,6 +66,14 @@ class PointageRepository(private val db: AppDatabase) {
 
     suspend fun getAllEmployees() = withContext(Dispatchers.IO) { db.employeeDao().getAllEmployeesList() }
 
+    suspend fun enregistrerBiometrie(employeeId: Long, methode: String) = withContext(Dispatchers.IO) {
+        db.employeeDao().updateBiometrie(employeeId, true, methode)
+    }
+
+    suspend fun reinitialiserBiometrie(employeeId: Long) = withContext(Dispatchers.IO) {
+        db.employeeDao().updateBiometrie(employeeId, false, "")
+    }
+
     fun getPointagesDuJour(debut: Long, fin: Long) = db.pointageDao().getPointagesDuJour(debut, fin)
 
     fun getPointagesEmployee(employeeId: Long) = db.pointageDao().getPointagesEmployee(employeeId)

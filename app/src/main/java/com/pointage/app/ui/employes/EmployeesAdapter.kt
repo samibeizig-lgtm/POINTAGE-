@@ -2,21 +2,42 @@ package com.pointage.app.ui.employes
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.pointage.app.R
 import com.pointage.app.data.model.Employee
 import com.pointage.app.databinding.ItemEmployeeBinding
 
-class EmployeesAdapter(private val onClick: (Employee) -> Unit) :
-    ListAdapter<Employee, EmployeesAdapter.ViewHolder>(DiffCallback()) {
+class EmployeesAdapter(
+    private val onConfigurerEmpreinte: (Employee) -> Unit,
+    private val onConfigurerVisage: (Employee) -> Unit,
+    private val onResetBiometrie: (Employee) -> Unit
+) : ListAdapter<Employee, EmployeesAdapter.ViewHolder>(DiffCallback()) {
 
     inner class ViewHolder(private val binding: ItemEmployeeBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(employee: Employee) {
             binding.tvNomPrenom.text = "${employee.nom} ${employee.prenom}"
             binding.tvMatricule.text = "Matricule: ${employee.matricule}"
             binding.tvPoste.text = employee.poste
-            binding.root.setOnClickListener { onClick(employee) }
+
+            if (employee.biometrieConfiguree) {
+                val methodeLabel = when (employee.methodeAuth) {
+                    "EMPREINTE" -> "Empreinte OK"
+                    "VISAGE" -> "Visage OK"
+                    else -> "Bio OK"
+                }
+                binding.tvBiometrieStatus.text = methodeLabel
+                binding.tvBiometrieStatus.setTextColor(ContextCompat.getColor(binding.root.context, R.color.arrivee_color))
+            } else {
+                binding.tvBiometrieStatus.text = "Non configure"
+                binding.tvBiometrieStatus.setTextColor(ContextCompat.getColor(binding.root.context, R.color.depart_color))
+            }
+
+            binding.btnConfigurerEmpreinte.setOnClickListener { onConfigurerEmpreinte(employee) }
+            binding.btnConfigurerVisage.setOnClickListener { onConfigurerVisage(employee) }
+            binding.btnResetBiometrie.setOnClickListener { onResetBiometrie(employee) }
         }
     }
 

@@ -12,5 +12,7 @@ data class Employee(
     val matricule: String,
     val poste: String,
     val actif: Boolean = true,
-    val dateCreation: Long = System.currentTimeMillis()
+    val dateCreation: Long = System.currentTimeMillis(),
+    val biometrieConfiguree: Boolean = false,
+    val methodeAuth: String = ""
 )

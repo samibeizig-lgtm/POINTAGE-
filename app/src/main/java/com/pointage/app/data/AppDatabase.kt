@@ -27,7 +27,7 @@ class Converters {
     fun toMethode(value: String): MethodeAuthentification = MethodeAuthentification.valueOf(value)
 }
 
-@Database(entities = [Employee::class, Pointage::class], version = 1, exportSchema = false)
+@Database(entities = [Employee::class, Pointage::class], version = 2, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun employeeDao(): EmployeeDao
@@ -43,7 +43,9 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "pointage_database"
-                ).build()
+                )
+                .fallbackToDestructiveMigration()
+                .build()
                 INSTANCE = instance
                 instance
             }

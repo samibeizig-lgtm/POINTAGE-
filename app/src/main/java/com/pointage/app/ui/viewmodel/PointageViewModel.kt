@@ -75,6 +75,26 @@ class PointageViewModel(application: Application) : AndroidViewModel(application
         _error.value = null
     }
 
+    fun enregistrerBiometrie(employeeId: Long, methode: String) {
+        viewModelScope.launch {
+            try {
+                repository.enregistrerBiometrie(employeeId, methode)
+            } catch (e: Exception) {
+                _error.value = "Erreur enregistrement biométrie: ${e.message}"
+            }
+        }
+    }
+
+    fun reinitialiserBiometrie(employeeId: Long) {
+        viewModelScope.launch {
+            try {
+                repository.reinitialiserBiometrie(employeeId)
+            } catch (e: Exception) {
+                _error.value = "Erreur réinitialisation: ${e.message}"
+            }
+        }
+    }
+
     fun getPointagesDuJour(): LiveData<List<Pointage>> {
         val cal = Calendar.getInstance()
         cal.set(Calendar.HOUR_OF_DAY, 0); cal.set(Calendar.MINUTE, 0); cal.set(Calendar.SECOND, 0); cal.set(Calendar.MILLISECOND, 0)

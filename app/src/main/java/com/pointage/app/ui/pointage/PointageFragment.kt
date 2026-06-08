@@ -38,11 +38,13 @@ class PointageFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         viewModel.employees.observe(viewLifecycleOwner) { employees ->
-            employeesList = employees
-            val noms = employees.map { "${it.nom} ${it.prenom} (${it.matricule})" }
+            employeesList = employees.filter { it.biometrieConfiguree }
+            val noms = employeesList.map { "${it.nom} ${it.prenom} (${it.matricule})" }
             val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, noms)
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             binding.spinnerEmployee.adapter = adapter
+            binding.tvAucunBiometrie.visibility =
+                if (employeesList.isEmpty() && employees.isNotEmpty()) View.VISIBLE else View.GONE
         }
 
         viewModel.pointageResult.observe(viewLifecycleOwner) { result ->
