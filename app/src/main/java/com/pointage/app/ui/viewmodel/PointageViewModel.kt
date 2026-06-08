@@ -8,12 +8,14 @@ import androidx.lifecycle.viewModelScope
 import com.pointage.app.data.AppDatabase
 import com.pointage.app.data.model.*
 import com.pointage.app.repository.PointageRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Calendar
 
 class PointageViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = PointageRepository(AppDatabase.getDatabase(application))
+    private val repository by lazy { PointageRepository(AppDatabase.getDatabase(application)) }
 
     val employees = repository.employees
 
@@ -47,7 +49,8 @@ class PointageViewModel(application: Application) : AndroidViewModel(application
     fun chargerFichePresence(employeeId: Long, mois: Int, annee: Int) {
         viewModelScope.launch {
             try {
-                _fichePresence.value = repository.getFichePresence(employeeId, mois, annee)
+                val fiche = withContext(Dispatchers.IO) { repository.getFichePresence(employeeId, mois, annee) }
+                _fichePresence.value = fiche
             } catch (e: Exception) {
                 _error.value = "Erreur chargement fiche: ${e.message}"
             }

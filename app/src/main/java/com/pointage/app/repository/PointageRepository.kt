@@ -2,13 +2,15 @@ package com.pointage.app.repository
 
 import com.pointage.app.data.AppDatabase
 import com.pointage.app.data.model.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.util.*
 
 class PointageRepository(private val db: AppDatabase) {
 
     val employees = db.employeeDao().getAllEmployees()
 
-    suspend fun inscrirePointage(employeeId: Long, methode: MethodeAuthentification): TypePointage {
+    suspend fun inscrirePointage(employeeId: Long, methode: MethodeAuthentification): TypePointage = withContext(Dispatchers.IO) {
         val dernier = db.pointageDao().getDernierPointage(employeeId)
         val type = if (dernier == null || dernier.type == TypePointage.DEPART) {
             TypePointage.ARRIVEE
@@ -16,11 +18,11 @@ class PointageRepository(private val db: AppDatabase) {
             TypePointage.DEPART
         }
         db.pointageDao().insert(Pointage(employeeId = employeeId, type = type, methode = methode))
-        return type
+        type
     }
 
-    suspend fun getFichePresence(employeeId: Long, mois: Int, annee: Int): FichePresence? {
-        val employee = db.employeeDao().getEmployeeById(employeeId) ?: return null
+    suspend fun getFichePresence(employeeId: Long, mois: Int, annee: Int): FichePresence? = withContext(Dispatchers.IO) {
+        val employee = db.employeeDao().getEmployeeById(employeeId) ?: return@withContext null
         val cal = Calendar.getInstance()
         cal.set(annee, mois - 1, 1, 0, 0, 0)
         cal.set(Calendar.MILLISECOND, 0)
@@ -33,8 +35,7 @@ class PointageRepository(private val db: AppDatabase) {
 
         val pointages = db.pointageDao().getPointagesPeriode(employeeId, debut, fin)
         val lignes = buildLignesPresence(pointages, mois, annee)
-
-        return FichePresence(employee, mois, annee, lignes)
+        FichePresence(employee, mois, annee, lignes)
     }
 
     private fun buildLignesPresence(pointages: List<Pointage>, mois: Int, annee: Int): List<LignePresence> {
@@ -59,11 +60,11 @@ class PointageRepository(private val db: AppDatabase) {
         }
     }
 
-    suspend fun ajouterEmployee(nom: String, prenom: String, matricule: String, poste: String): Long {
-        return db.employeeDao().insert(Employee(nom = nom, prenom = prenom, matricule = matricule, poste = poste))
+    suspend fun ajouterEmployee(nom: String, prenom: String, matricule: String, poste: String): Long = withContext(Dispatchers.IO) {
+        db.employeeDao().insert(Employee(nom = nom, prenom = prenom, matricule = matricule, poste = poste))
     }
 
-    suspend fun getAllEmployees() = db.employeeDao().getAllEmployeesList()
+    suspend fun getAllEmployees() = withContext(Dispatchers.IO) { db.employeeDao().getAllEmployeesList() }
 
     fun getPointagesDuJour(debut: Long, fin: Long) = db.pointageDao().getPointagesDuJour(debut, fin)
 
