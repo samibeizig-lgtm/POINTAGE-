@@ -52,7 +52,7 @@ class EmployesFragment : Fragment() {
     }
 
     private fun lancerConfigurationBiometrie(employee: Employee, methode: String) {
-        val authenticators = if (methode == "VISAGE") BIOMETRIC_STRONG or BIOMETRIC_WEAK else BIOMETRIC_STRONG
+        val authenticators = if (methode == "VISAGE") BIOMETRIC_WEAK else BIOMETRIC_STRONG
         val biometricManager = BiometricManager.from(requireContext())
 
         when (biometricManager.canAuthenticate(authenticators)) {

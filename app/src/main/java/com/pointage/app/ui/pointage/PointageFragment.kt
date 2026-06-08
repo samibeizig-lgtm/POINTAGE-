@@ -87,21 +87,21 @@ class PointageFragment : Fragment() {
         val employee = employeesList[position]
 
         val biometricManager = BiometricManager.from(requireContext())
-        val authenticators = if (methode == MethodeAuthentification.VISAGE) {
-            BIOMETRIC_STRONG or BIOMETRIC_WEAK
-        } else {
-            BIOMETRIC_STRONG
-        }
+        val authenticators = if (methode == MethodeAuthentification.VISAGE) BIOMETRIC_WEAK else BIOMETRIC_STRONG
 
         when (biometricManager.canAuthenticate(authenticators)) {
             BiometricManager.BIOMETRIC_SUCCESS -> {
                 afficherPromptBiometrique(employee, methode, authenticators)
             }
             BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE -> {
-                Toast.makeText(requireContext(), "Pas de capteur biometrique disponible", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(),
+                    if (methode == MethodeAuthentification.VISAGE) "Reconnaissance faciale non disponible sur cet appareil"
+                    else "Pas de capteur d'empreinte disponible", Toast.LENGTH_LONG).show()
             }
             BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED -> {
-                Toast.makeText(requireContext(), "Aucune biometrie enregistree. Veuillez configurer dans les parametres.", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(),
+                    if (methode == MethodeAuthentification.VISAGE) "Aucun visage enregistre. Allez dans Parametres > Securite > Reconnaissance faciale."
+                    else "Aucune empreinte enregistree. Allez dans Parametres > Securite > Empreinte digitale.", Toast.LENGTH_LONG).show()
             }
             else -> {
                 Toast.makeText(requireContext(), "Authentification biometrique non disponible", Toast.LENGTH_LONG).show()
