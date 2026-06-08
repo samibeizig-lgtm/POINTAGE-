@@ -38,7 +38,7 @@ class FichePresenceFragment : Fragment() {
             val noms = employees.map { "${it.nom} ${it.prenom} (${it.matricule})" }
             val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, noms)
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            binding.spinnerEmployeeFiche.adapter = adapter
+            binding.spinnerEmployeFiche.adapter = adapter
         }
 
         val lignesAdapter = LignePresenceAdapter()
@@ -56,7 +56,7 @@ class FichePresenceFragment : Fragment() {
         }
 
         binding.btnChargerFiche.setOnClickListener {
-            val position = binding.spinnerEmployeeFiche.selectedItemPosition
+            val position = binding.spinnerEmployeFiche.selectedItemPosition
             if (employeesList.isEmpty() || position < 0) {
                 Toast.makeText(requireContext(), "Selectionnez un employe", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
