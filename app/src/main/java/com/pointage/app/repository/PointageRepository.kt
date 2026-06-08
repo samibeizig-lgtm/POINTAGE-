@@ -84,8 +84,9 @@ class PointageRepository(private val db: AppDatabase) {
         db.faceSignatureDao().insert(FaceSignature(employeeId = employeeId, embedding = embeddingStr))
     }
 
-    suspend fun identifierEtPointer(embedding: FloatArray): Pair<String, TypePointage>? = withContext(Dispatchers.IO) {
+    suspend fun identifierEtPointer(embedding: FloatArray): Triple<String?, TypePointage?, Float> = withContext(Dispatchers.IO) {
         val signatures = db.faceSignatureDao().getAllSignatures()
+        if (signatures.isEmpty()) return@withContext Triple(null, null, 0f)
         var bestMatch: Long? = null
         var bestScore = 0f
         for (sig in signatures) {
@@ -96,10 +97,10 @@ class PointageRepository(private val db: AppDatabase) {
                 bestMatch = sig.employeeId
             }
         }
-        if (bestScore < 0.65f || bestMatch == null) return@withContext null
-        val employee = db.employeeDao().getEmployeeById(bestMatch) ?: return@withContext null
+        if (bestScore < 0.50f || bestMatch == null) return@withContext Triple(null, null, bestScore)
+        val employee = db.employeeDao().getEmployeeById(bestMatch) ?: return@withContext Triple(null, null, bestScore)
         val type = inscrirePointageInternal(bestMatch, MethodeAuthentification.VISAGE)
-        Pair("${employee.prenom} ${employee.nom}", type)
+        Triple("${employee.prenom} ${employee.nom}", type, bestScore)
     }
 
     private suspend fun inscrirePointageInternal(employeeId: Long, methode: MethodeAuthentification): TypePointage {

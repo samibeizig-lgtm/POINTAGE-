@@ -87,11 +87,15 @@ class FacePointageFragment : Fragment() {
             binding.root.postDelayed({ findNavController().popBackStack() }, 2500)
         }
 
-        viewModel.faceNoMatch.observe(viewLifecycleOwner) { noMatch ->
-            noMatch ?: return@observe
-            // visage non reconnu : on reprend le scan silencieusement
+        viewModel.faceNoMatch.observe(viewLifecycleOwner) { score ->
+            score ?: return@observe
             processing.set(false)
-            updateStatus("Approchez votre visage de la camera...", "#FFFFFF")
+            val scoreStr = String.format("%.2f", score)
+            if (score == 0f) {
+                updateStatus("Aucun visage enregistre dans la base", "#FF8800")
+            } else {
+                updateStatus("Non reconnu (score: $scoreStr / seuil: 0.50)", "#FF8800")
+            }
         }
 
         viewModel.error.observe(viewLifecycleOwner) { error ->

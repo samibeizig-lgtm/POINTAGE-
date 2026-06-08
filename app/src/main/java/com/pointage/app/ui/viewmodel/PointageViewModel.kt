@@ -89,17 +89,17 @@ class PointageViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    private val _faceNoMatch = MutableLiveData<Boolean>()
-    val faceNoMatch: LiveData<Boolean> = _faceNoMatch
+    private val _faceNoMatch = MutableLiveData<Float?>()
+    val faceNoMatch: LiveData<Float?> = _faceNoMatch
 
     fun identifierEtPointerParVisage(embedding: FloatArray) {
         viewModelScope.launch {
             try {
-                val result = repository.identifierEtPointer(embedding)
-                if (result != null) {
-                    _facePointageResult.value = result
+                val (nom, type, score) = repository.identifierEtPointer(embedding)
+                if (nom != null && type != null) {
+                    _facePointageResult.value = Pair(nom, type)
                 } else {
-                    _faceNoMatch.value = true
+                    _faceNoMatch.value = score
                 }
             } catch (e: Exception) {
                 _error.value = "Erreur reconnaissance: ${e.message}"
