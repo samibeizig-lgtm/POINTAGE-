@@ -38,11 +38,11 @@ class FacePointageFragment : Fragment() {
     private val viewModel: PointageViewModel by activityViewModels()
 
     private lateinit var cameraExecutor: ExecutorService
-    private val isProcessing = AtomicBoolean(false)
-    private val pointageFait = AtomicBoolean(false)
-    private var lastRecognitionTime = 0L
-    private var framesWithFace = 0
-    private val RECOGNITION_COOLDOWN_MS = 2000L
+
+    // true = analyse en cours ou pointage réussi (caméra ne doit plus traiter)
+    private val processing = AtomicBoolean(false)
+    // true = pointage enregistré, on attend la navigation retour
+    private val done = AtomicBoolean(false)
 
     private val faceDetector = FaceDetection.getClient(
         FaceDetectorOptions.Builder()
@@ -83,19 +83,22 @@ class FacePointageFragment : Fragment() {
             val typeStr = if (result.second == TypePointage.ARRIVEE) "ARRIVEE" else "DEPART"
             updateStatus("✓ ${result.first}  —  $typeStr", "#4CAF50")
             viewModel.clearFacePointageResult()
+            done.set(true)
             binding.root.postDelayed({ findNavController().popBackStack() }, 2500)
         }
 
         viewModel.faceNoMatch.observe(viewLifecycleOwner) { noMatch ->
             noMatch ?: return@observe
-            pointageFait.set(false)
+            // visage non reconnu : on reprend le scan silencieusement
+            processing.set(false)
             updateStatus("Approchez votre visage de la camera...", "#FFFFFF")
         }
 
         viewModel.error.observe(viewLifecycleOwner) { error ->
             error ?: return@observe
             updateStatus(error, "#F44336")
-            pointageFait.set(false)
+            // erreur technique : on reprend le scan après un court délai
+            binding.root.postDelayed({ processing.set(false) }, 1500)
             viewModel.clearError()
         }
 
@@ -122,9 +125,12 @@ class FacePointageFragment : Fragment() {
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build().also { analysis ->
                     analysis.setAnalyzer(cameraExecutor) { imageProxy ->
-                        val now = System.currentTimeMillis()
-                        if (!isProcessing.get() && now - lastRecognitionTime > RECOGNITION_COOLDOWN_MS) {
-                            processImageForRecognition(imageProxy)
+                        if (done.get() || processing.compareAndSet(false, true)) {
+                            if (done.get()) {
+                                imageProxy.close()
+                            } else {
+                                processImageForRecognition(imageProxy)
+                            }
                         } else {
                             imageProxy.close()
                         }
@@ -145,8 +151,12 @@ class FacePointageFragment : Fragment() {
     }
 
     private fun processImageForRecognition(imageProxy: ImageProxy) {
-        isProcessing.set(true)
-        val bitmap = imageProxy.toBitmap() ?: run { imageProxy.close(); isProcessing.set(false); return }
+        val bitmap = imageProxy.toBitmap()
+        if (bitmap == null) {
+            imageProxy.close()
+            processing.set(false)
+            return
+        }
         val rotated = FaceRecognitionHelper.rotateBitmap(bitmap, imageProxy.imageInfo.rotationDegrees)
         imageProxy.close()
 
@@ -154,24 +164,19 @@ class FacePointageFragment : Fragment() {
         faceDetector.process(inputImage)
             .addOnSuccessListener { faces ->
                 if (faces.isEmpty()) {
-                    framesWithFace = 0
                     updateStatus("Approchez votre visage de la camera...", "#FFFFFF")
+                    processing.set(false)
                 } else {
-                    framesWithFace++
                     updateStatus("Visage detecte — analyse...", "#FFD5C0")
-                    if (!pointageFait.get()) {
-                        val face = faces.maxByOrNull { it.boundingBox.width() * it.boundingBox.height() }!!
-                        val embedding = FaceRecognitionHelper.extractEmbedding(rotated, face.boundingBox, face)
-                        pointageFait.set(true)
-                        viewModel.identifierEtPointerParVisage(embedding)
-                    }
-                    lastRecognitionTime = System.currentTimeMillis()
+                    val face = faces.maxByOrNull { it.boundingBox.width() * it.boundingBox.height() }!!
+                    val embedding = FaceRecognitionHelper.extractEmbedding(rotated, face.boundingBox, face)
+                    // processing reste à true jusqu'au retour du ViewModel
+                    viewModel.identifierEtPointerParVisage(embedding)
                 }
-                isProcessing.set(false)
             }
             .addOnFailureListener {
                 updateStatus("Erreur detection: ${it.message}", "#F44336")
-                isProcessing.set(false)
+                binding.root.post { processing.set(false) }
             }
     }
 
