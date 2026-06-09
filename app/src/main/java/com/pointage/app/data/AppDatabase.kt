@@ -7,6 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import com.pointage.app.data.dao.EmployeeDao
+import com.pointage.app.data.dao.ExportDao
 import com.pointage.app.data.dao.FaceSignatureDao
 import com.pointage.app.data.dao.PointageDao
 import com.pointage.app.data.model.Employee
@@ -35,6 +36,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun employeeDao(): EmployeeDao
     abstract fun pointageDao(): PointageDao
     abstract fun faceSignatureDao(): FaceSignatureDao
+    abstract fun exportDao(): ExportDao
 
     companion object {
         @Volatile

@@ -6,6 +6,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.pointage.app.data.AppDatabase
+import com.pointage.app.data.ExportManager
+import com.pointage.app.data.ImportResult
 import com.pointage.app.data.model.*
 import com.pointage.app.repository.PointageRepository
 import kotlinx.coroutines.Dispatchers
@@ -16,6 +18,29 @@ import java.util.Calendar
 class PointageViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository by lazy { PointageRepository(AppDatabase.getDatabase(application)) }
+    private val exportManager by lazy { ExportManager(AppDatabase.getDatabase(application)) }
+
+    private val _exportJson = MutableLiveData<String?>()
+    val exportJson: LiveData<String?> = _exportJson
+    private val _importResult = MutableLiveData<ImportResult?>()
+    val importResult: LiveData<ImportResult?> = _importResult
+
+    fun exporterDonnees() {
+        viewModelScope.launch {
+            try { _exportJson.value = exportManager.exporterJson() }
+            catch (e: Exception) { _error.value = "Erreur export: ${e.message}" }
+        }
+    }
+
+    fun importerDonnees(json: String, remplacer: Boolean) {
+        viewModelScope.launch {
+            try { _importResult.value = exportManager.importerJson(json, remplacer) }
+            catch (e: Exception) { _error.value = "Erreur import: ${e.message}" }
+        }
+    }
+
+    fun clearExportJson() { _exportJson.value = null }
+    fun clearImportResult() { _importResult.value = null }
 
     val employees = repository.employees
 

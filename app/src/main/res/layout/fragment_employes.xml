@@ -3,23 +3,70 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#FFF8F5">
 
-    <TextView
-        android:id="@+id/tv_aucun_employe"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Aucun employe enregistre.\nAppuyez sur + pour en ajouter un."
-        android:textSize="16sp"
-        android:gravity="center"
-        android:padding="32dp"
-        android:visibility="gone" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_employes"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="8dp" />
+        android:orientation="vertical">
+
+        <!-- Barre export/import -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="#FFFFFF"
+            android:padding="8dp"
+            android:elevation="4dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_exporter"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:text="Exporter"
+                android:textSize="13sp"
+                android:backgroundTint="@color/colorPrimary"
+                android:layout_marginEnd="6dp"
+                app:cornerRadius="8dp"
+                app:icon="@android:drawable/ic_menu_share"
+                app:iconGravity="textStart" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_importer"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:text="Importer"
+                android:textSize="13sp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:textColor="@color/colorPrimary"
+                app:strokeColor="@color/colorPrimary"
+                app:cornerRadius="8dp"
+                app:icon="@android:drawable/ic_menu_upload"
+                app:iconGravity="textStart" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_aucun_employe"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Aucun employe enregistre.\nAppuyez sur + pour en ajouter un."
+            android:textSize="16sp"
+            android:gravity="center"
+            android:padding="32dp"
+            android:visibility="gone" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_employes"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:padding="8dp" />
+
+    </LinearLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_ajouter_employee"
@@ -28,6 +75,7 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         android:src="@android:drawable/ic_input_add"
-        app:tint="@android:color/white" />
+        app:tint="@android:color/white"
+        app:backgroundTint="@color/colorPrimary" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
