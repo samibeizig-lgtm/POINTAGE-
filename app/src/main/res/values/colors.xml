@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#C4704F</color>
-    <color name="colorPrimaryDark">#8D4F38</color>
-    <color name="colorAccent">#E8956D</color>
-    <color name="terracotta">#C4704F</color>
-    <color name="terracotta_dark">#8D4F38</color>
-    <color name="terracotta_light">#F2C4A8</color>
-    <color name="arrivee_color">#4CAF50</color>
-    <color name="depart_color">#F44336</color>
+    <color name="colorPrimary">#1976D2</color>
+    <color name="colorPrimaryDark">#1565C0</color>
+    <color name="colorAccent">#42A5F5</color>
+    <color name="terracotta">#1976D2</color>
+    <color name="terracotta_dark">#1565C0</color>
+    <color name="terracotta_light">#BBDEFB</color>
+    <color name="blue_light">#E3F2FD</color>
+    <color name="arrivee_color">#2E7D32</color>
+    <color name="depart_color">#C62828</color>
 </resources>

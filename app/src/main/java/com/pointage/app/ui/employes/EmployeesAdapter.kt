@@ -1,6 +1,7 @@
 package com.pointage.app.ui.employes
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
@@ -12,10 +13,11 @@ import com.pointage.app.databinding.ItemEmployeeBinding
 
 class EmployeesAdapter(
     private val onConfigurerVisage: (Employee) -> Unit,
-    private val onResetBiometrie: (Employee) -> Unit,
     private val onModifier: (Employee) -> Unit,
     private val onSupprimer: (Employee) -> Unit
 ) : ListAdapter<Employee, EmployeesAdapter.ViewHolder>(DiffCallback()) {
+
+    private val pendingDelete = mutableSetOf<Long>()
 
     inner class ViewHolder(private val binding: ItemEmployeeBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(employee: Employee) {
@@ -31,10 +33,26 @@ class EmployeesAdapter(
                 binding.tvBiometrieStatus.setTextColor(ContextCompat.getColor(binding.root.context, R.color.depart_color))
             }
 
+            val showConfirm = employee.id in pendingDelete
+            binding.layoutConfirmDelete.visibility = if (showConfirm) View.VISIBLE else View.GONE
+
             binding.btnConfigurerVisage.setOnClickListener { onConfigurerVisage(employee) }
-            binding.btnResetBiometrie.setOnClickListener { onResetBiometrie(employee) }
             binding.btnModifier.setOnClickListener { onModifier(employee) }
-            binding.btnSupprimer.setOnClickListener { onSupprimer(employee) }
+
+            binding.btnSupprimer.setOnClickListener {
+                pendingDelete.add(employee.id)
+                binding.layoutConfirmDelete.visibility = View.VISIBLE
+            }
+
+            binding.btnConfirmerSuppression.setOnClickListener {
+                pendingDelete.remove(employee.id)
+                onSupprimer(employee)
+            }
+
+            binding.btnAnnulerSuppression.setOnClickListener {
+                pendingDelete.remove(employee.id)
+                binding.layoutConfirmDelete.visibility = View.GONE
+            }
         }
     }
 

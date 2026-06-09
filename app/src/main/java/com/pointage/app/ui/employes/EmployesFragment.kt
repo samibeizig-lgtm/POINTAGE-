@@ -53,9 +53,8 @@ class EmployesFragment : Fragment() {
 
         val adapter = EmployeesAdapter(
             onConfigurerVisage = { employee -> naviguerVersEnregistrementVisage(employee) },
-            onResetBiometrie = { employee -> viewModel.reinitialiserBiometrie(employee.id) },
             onModifier = { employee -> afficherDialogModification(employee) },
-            onSupprimer = { employee -> confirmerSuppression(employee) }
+            onSupprimer = { employee -> viewModel.supprimerEmployee(employee.id) }
         )
         binding.recyclerEmployes.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerEmployes.adapter = adapter
@@ -184,15 +183,6 @@ class EmployesFragment : Fragment() {
                     viewModel.modifierEmployee(employee.copy(nom = nom, prenom = prenom, matricule = matricule, poste = poste))
                 }
             }
-            .setNegativeButton("Annuler", null)
-            .show()
-    }
-
-    private fun confirmerSuppression(employee: Employee) {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Supprimer l'employe")
-            .setMessage("Supprimer ${employee.nom} ${employee.prenom} (${employee.matricule}) ?")
-            .setPositiveButton("Supprimer") { _, _ -> viewModel.supprimerEmployee(employee.id) }
             .setNegativeButton("Annuler", null)
             .show()
     }

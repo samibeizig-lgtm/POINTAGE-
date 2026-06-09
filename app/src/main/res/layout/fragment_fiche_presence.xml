@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#FFF8F5">
+    android:background="@color/blue_light">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -27,7 +27,7 @@
             android:layout_height="wrap_content"
             android:text="Fiche de presence"
             android:textSize="13sp"
-            android:textColor="#FFD5C0"
+            android:textColor="#BBDEFB"
             android:layout_gravity="center_horizontal" />
 
     </LinearLayout>
@@ -49,8 +49,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="8dp">
+            android:orientation="horizontal">
 
             <Spinner
                 android:id="@+id/spinner_mois"
@@ -67,14 +66,6 @@
 
         </LinearLayout>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_charger_fiche"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Charger la fiche"
-            android:backgroundTint="@color/colorPrimary"
-            app:cornerRadius="8dp" />
-
     </LinearLayout>
 
     <LinearLayout
@@ -90,7 +81,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:padding="8dp"
-            android:background="#F5E6DF">
+            android:background="@color/terracotta_light">
 
             <TextView
                 android:id="@+id/tv_titre_employee"
@@ -99,7 +90,7 @@
                 android:layout_weight="1"
                 android:textStyle="bold"
                 android:textSize="13sp"
-                android:textColor="@color/terracotta_dark" />
+                android:textColor="@color/colorPrimaryDark" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_telecharger_pdf"
@@ -117,16 +108,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:background="#E8D5CC"
+            android:background="@color/colorPrimary"
             android:paddingStart="8dp"
             android:paddingEnd="8dp"
             android:paddingTop="6dp"
             android:paddingBottom="6dp">
 
-            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1.5" android:text="Jour" android:textStyle="bold" android:textSize="12sp" android:textColor="@color/terracotta_dark" />
-            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Arrivee" android:textStyle="bold" android:textSize="12sp" android:gravity="center" android:textColor="@color/terracotta_dark" />
-            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Depart" android:textStyle="bold" android:textSize="12sp" android:gravity="center" android:textColor="@color/terracotta_dark" />
-            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Duree" android:textStyle="bold" android:textSize="12sp" android:gravity="center" android:textColor="@color/terracotta_dark" />
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1.5" android:text="Jour" android:textStyle="bold" android:textSize="12sp" android:textColor="#FFFFFF" />
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Arrivee" android:textStyle="bold" android:textSize="12sp" android:gravity="center" android:textColor="#FFFFFF" />
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Depart" android:textStyle="bold" android:textSize="12sp" android:gravity="center" android:textColor="#FFFFFF" />
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Duree" android:textStyle="bold" android:textSize="12sp" android:gravity="center" android:textColor="#FFFFFF" />
 
         </LinearLayout>
 
@@ -141,7 +132,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:padding="8dp"
-            android:background="#F5E6DF">
+            android:background="@color/terracotta_light">
 
             <TextView
                 android:id="@+id/tv_total_heures"
@@ -149,7 +140,7 @@
                 android:layout_height="wrap_content"
                 android:textStyle="bold"
                 android:textSize="14sp"
-                android:textColor="@color/terracotta_dark"
+                android:textColor="@color/colorPrimaryDark"
                 android:gravity="end" />
 
         </LinearLayout>

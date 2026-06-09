@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFF8F5">
+    android:background="@color/blue_light">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -27,7 +27,7 @@
             android:layout_height="wrap_content"
             android:text="Pointage"
             android:textSize="16sp"
-            android:textColor="@color/terracotta_dark"
+            android:textColor="@color/colorPrimaryDark"
             android:layout_marginBottom="24dp" />
 
         <TextView
@@ -95,7 +95,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Pointage par visage"
-                        android:textColor="#FFD5C0"
+                        android:textColor="#BBDEFB"
                         android:textSize="12sp" />
 
                 </LinearLayout>
@@ -139,7 +139,7 @@
                     android:layout_height="48dp"
                     android:text="Enregistrer le pointage"
                     android:textSize="14sp"
-                    android:backgroundTint="#8D6E63"
+                    android:backgroundTint="@color/colorPrimary"
                     app:cornerRadius="10dp"
                     app:icon="@android:drawable/ic_menu_recent_history"
                     app:iconGravity="textStart" />
@@ -154,7 +154,7 @@
             android:layout_height="wrap_content"
             app:cardElevation="4dp"
             app:cardCornerRadius="12dp"
-            app:cardBackgroundColor="#FFF3EE">
+            app:cardBackgroundColor="@color/blue_light">
 
             <TextView
                 android:id="@+id/tv_resultat"

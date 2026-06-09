@@ -99,8 +99,6 @@ class FichePresenceFragment : Fragment() {
             binding.tvTotalHeures.text = "Total : ${heures}h ${String.format("%02d", minutes)}min"
         }
 
-        binding.btnChargerFiche.setOnClickListener { chargerFiche() }
-
         binding.btnTelechargerPdf.setOnClickListener {
             ficheCourante?.let { genererPdf(it) }
                 ?: Toast.makeText(requireContext(), "Chargez d'abord la fiche", Toast.LENGTH_SHORT).show()
@@ -122,25 +120,29 @@ class FichePresenceFragment : Fragment() {
         val page = document.startPage(pageInfo)
         val canvas: Canvas = page.canvas
 
-        val paintTitre = Paint().apply { color = Color.parseColor("#C4704F"); textSize = 28f; isFakeBoldText = true }
-        val paintSousTitre = Paint().apply { color = Color.parseColor("#8D4F38"); textSize = 14f }
-        val paintHeader = Paint().apply { color = Color.WHITE; textSize = 12f; isFakeBoldText = true }
-        val paintCell = Paint().apply { color = Color.parseColor("#333333"); textSize = 11f }
-        val paintTotal = Paint().apply { color = Color.parseColor("#C4704F"); textSize = 13f; isFakeBoldText = true }
-        val paintLine = Paint().apply { color = Color.parseColor("#E8D5CC"); strokeWidth = 1f }
-        val paintBgHeader = Paint().apply { color = Color.parseColor("#C4704F") }
-        val paintBgRow = Paint().apply { color = Color.parseColor("#FFF8F5") }
+        val blue = Color.parseColor("#1976D2")
+        val blueDark = Color.parseColor("#1565C0")
+        val blueLight = Color.parseColor("#E3F2FD")
+
+        val paintTitre = Paint().apply { color = blue; textSize = 22f; isFakeBoldText = true }
+        val paintSousTitre = Paint().apply { color = blueDark; textSize = 11f }
+        val paintHeader = Paint().apply { color = Color.WHITE; textSize = 10f; isFakeBoldText = true }
+        val paintCell = Paint().apply { color = Color.parseColor("#333333"); textSize = 9f }
+        val paintTotal = Paint().apply { color = blueDark; textSize = 11f; isFakeBoldText = true }
+        val paintLine = Paint().apply { color = Color.parseColor("#BBDEFB"); strokeWidth = 1f }
+        val paintBgHeader = Paint().apply { color = blue }
+        val paintBgRow = Paint().apply { color = blueLight }
         val paintBgRowAlt = Paint().apply { color = Color.WHITE }
 
-        var y = 50f
+        var y = 38f
 
         canvas.drawText("NEXSTAY", 40f, y, paintTitre)
-        y += 22f
+        y += 16f
         canvas.drawText("Systeme de Pointage", 40f, y, paintSousTitre)
-        y += 30f
+        y += 12f
 
-        canvas.drawLine(40f, y, 555f, y, paintLine.apply { strokeWidth = 2f; color = Color.parseColor("#C4704F") })
-        y += 20f
+        canvas.drawLine(40f, y, 555f, y, Paint().apply { color = blue; strokeWidth = 1.5f })
+        y += 14f
 
         val moisNom = moisNoms[fiche.mois - 1]
         val cal = Calendar.getInstance()
@@ -152,72 +154,56 @@ class FichePresenceFragment : Fragment() {
         cal.set(fiche.annee, fiche.mois - 1, nbJours)
         val dateFin = sdfDate.format(cal.time)
 
-        val paintInfo = Paint().apply { color = Color.parseColor("#555555"); textSize = 12f }
+        val paintInfo = Paint().apply { color = Color.parseColor("#555555"); textSize = 10f }
         canvas.drawText("Periode : du $dateDebut au $dateFin  ($moisNom ${fiche.annee})", 40f, y, paintInfo)
-        y += 18f
-        canvas.drawText("Employe : ${fiche.employee.nom} ${fiche.employee.prenom}", 40f, y, paintInfo.apply { isFakeBoldText = true })
-        y += 18f
-        canvas.drawText("Matricule : ${fiche.employee.matricule}     Poste : ${fiche.employee.poste}", 40f, y, paintInfo.apply { isFakeBoldText = false })
-        y += 28f
+        y += 14f
+        canvas.drawText("Employe : ${fiche.employee.nom} ${fiche.employee.prenom}     Matricule : ${fiche.employee.matricule}     Poste : ${fiche.employee.poste}", 40f, y, paintInfo.apply { isFakeBoldText = true })
+        y += 16f
 
-        val col0 = 40f; val col1 = 180f; val col2 = 300f; val col3 = 420f; val col4 = 515f
-        val rowH = 22f
+        val col0 = 40f; val col1 = 175f; val col2 = 305f; val col3 = 425f
+        // Calculate row height to fit all days on one page
+        // Available space: 842 - y (current) - 30 (footer) = ~742 - y
+        val available = 842f - y - 30f
+        val headerH = 20f
+        val rowH = ((available - headerH) / nbJours).coerceIn(14f, 22f)
 
-        canvas.drawRect(col0, y - 16f, 555f, y + 6f, paintBgHeader)
-        canvas.drawText("Jour", col0 + 4f, y, paintHeader)
-        canvas.drawText("Arrivee", col1 + 4f, y, paintHeader)
-        canvas.drawText("Depart", col2 + 4f, y, paintHeader)
-        canvas.drawText("Duree", col3 + 4f, y, paintHeader)
-        y += rowH
+        canvas.drawRect(col0, y, 555f, y + headerH, paintBgHeader)
+        val textY = y + headerH - 6f
+        canvas.drawText("Jour", col0 + 4f, textY, paintHeader)
+        canvas.drawText("Arrivee", col1 + 4f, textY, paintHeader)
+        canvas.drawText("Depart", col2 + 4f, textY, paintHeader)
+        canvas.drawText("Duree", col3 + 4f, textY, paintHeader)
+        y += headerH
 
         val sdfTime = SimpleDateFormat("HH:mm", Locale.getDefault())
         val sdfJour = SimpleDateFormat("EEE dd", Locale.FRENCH)
 
-        var currentPage = page
-        var currentCanvas = canvas
-
         fiche.lignes.forEachIndexed { index, ligne ->
-            // Nouvelle page si on dépasse la limite
-            if (y > 810f) {
-                currentCanvas.drawLine(40f, y - 4f, 555f, y - 4f, paintLine.apply { strokeWidth = 1f; color = Color.parseColor("#C4704F") })
-                document.finishPage(currentPage)
-                val nextPageInfo = PdfDocument.PageInfo.Builder(595, 842, document.pages.size + 1).create()
-                currentPage = document.startPage(nextPageInfo)
-                currentCanvas = currentPage.canvas
-                // Re-dessiner l'entête du tableau sur la nouvelle page
-                y = 40f
-                currentCanvas.drawRect(col0, y - 16f, 555f, y + 6f, paintBgHeader)
-                currentCanvas.drawText("Jour", col0 + 4f, y, paintHeader)
-                currentCanvas.drawText("Arrivee", col1 + 4f, y, paintHeader)
-                currentCanvas.drawText("Depart", col2 + 4f, y, paintHeader)
-                currentCanvas.drawText("Duree", col3 + 4f, y, paintHeader)
-                y += rowH
-            }
-
             val bg = if (index % 2 == 0) paintBgRow else paintBgRowAlt
-            currentCanvas.drawRect(col0, y - 14f, 555f, y + 6f, bg)
-            currentCanvas.drawLine(col0, y + 6f, 555f, y + 6f, paintLine.apply { strokeWidth = 0.5f; color = Color.parseColor("#E0D0C8") })
+            canvas.drawRect(col0, y, 555f, y + rowH, bg)
+            canvas.drawLine(col0, y + rowH, 555f, y + rowH, paintLine.apply { strokeWidth = 0.4f })
 
-            currentCanvas.drawText(sdfJour.format(Date(ligne.date)), col0 + 4f, y, paintCell)
-            currentCanvas.drawText(ligne.arrivee?.let { sdfTime.format(Date(it)) } ?: "--:--", col1 + 4f, y, paintCell.apply { color = Color.parseColor("#4CAF50") })
-            currentCanvas.drawText(ligne.depart?.let { sdfTime.format(Date(it)) } ?: "--:--", col2 + 4f, y, paintCell.apply { color = Color.parseColor("#F44336") })
+            val cy = y + rowH - 4f
+            canvas.drawText(sdfJour.format(Date(ligne.date)), col0 + 4f, cy, paintCell.apply { color = Color.parseColor("#333333") })
+            canvas.drawText(ligne.arrivee?.let { sdfTime.format(Date(it)) } ?: "--:--", col1 + 4f, cy, paintCell.apply { color = Color.parseColor("#2E7D32") })
+            canvas.drawText(ligne.depart?.let { sdfTime.format(Date(it)) } ?: "--:--", col2 + 4f, cy, paintCell.apply { color = Color.parseColor("#C62828") })
             if (ligne.dureeMinutes != null) {
                 val h = ligne.dureeMinutes / 60; val m = ligne.dureeMinutes % 60
-                currentCanvas.drawText("${h}h${String.format("%02d", m)}", col3 + 4f, y, paintCell.apply { color = Color.parseColor("#333333") })
+                canvas.drawText("${h}h${String.format("%02d", m)}", col3 + 4f, cy, paintCell.apply { color = Color.parseColor("#333333") })
             } else {
-                currentCanvas.drawText("--", col3 + 4f, y, paintCell.apply { color = Color.parseColor("#999999") })
+                canvas.drawText("--", col3 + 4f, cy, paintCell.apply { color = Color.parseColor("#999999") })
             }
             y += rowH
         }
 
-        y += 10f
-        currentCanvas.drawLine(40f, y, 555f, y, paintLine.apply { strokeWidth = 1.5f; color = Color.parseColor("#C4704F") })
-        y += 18f
+        y += 8f
+        canvas.drawLine(40f, y, 555f, y, Paint().apply { color = blue; strokeWidth = 1f })
+        y += 14f
         val totalMinutes = fiche.lignes.sumOf { it.dureeMinutes ?: 0L }
         val h = totalMinutes / 60; val m = totalMinutes % 60
-        currentCanvas.drawText("Total heures travaillees : ${h}h ${String.format("%02d", m)}min", col0, y, paintTotal)
+        canvas.drawText("Total heures travaillees : ${h}h ${String.format("%02d", m)}min", col0, y, paintTotal)
 
-        document.finishPage(currentPage)
+        document.finishPage(page)
 
         val nomFichier = "Fiche_${fiche.employee.matricule}_${moisNoms[fiche.mois - 1]}_${fiche.annee}.pdf"
 
