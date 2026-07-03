@@ -8,12 +8,23 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.*
 
+private const val COOLDOWN_MS = 5 * 60 * 1000L // 5 minutes
+
+class PointageTropRapideException(val employeeName: String) : Exception(
+    "Pointage déjà effectué pour $employeeName. Réessayez dans 5 minutes."
+)
+
 class PointageRepository(private val db: AppDatabase) {
 
     val employees = db.employeeDao().getAllEmployees()
 
     suspend fun inscrirePointage(employeeId: Long, methode: MethodeAuthentification): TypePointage = withContext(Dispatchers.IO) {
         val dernier = db.pointageDao().getDernierPointage(employeeId)
+        if (dernier != null && System.currentTimeMillis() - dernier.timestamp < COOLDOWN_MS) {
+            val emp = db.employeeDao().getEmployeeById(employeeId)
+            val name = emp?.let { "${it.prenom} ${it.nom}" } ?: "cet employé"
+            throw PointageTropRapideException(name)
+        }
         val type = if (dernier == null || dernier.type == TypePointage.DEPART) {
             TypePointage.ARRIVEE
         } else {
@@ -55,11 +66,16 @@ class PointageRepository(private val db: AppDatabase) {
             cal.set(annee, mois - 1, jour, 0, 0, 0)
             val dateMs = cal.timeInMillis
             val pointagesJour = grouped[key] ?: emptyList()
-            val arrivee = pointagesJour.firstOrNull { it.type == TypePointage.ARRIVEE }?.timestamp
-            val depart = pointagesJour.lastOrNull { it.type == TypePointage.DEPART }?.timestamp
-            val duree = if (arrivee != null && depart != null) (depart - arrivee) / 60000 else null
-            LignePresence(dateMs, arrivee, depart, duree)
+            val arriveeP = pointagesJour.firstOrNull { it.type == TypePointage.ARRIVEE }
+            val departP = pointagesJour.lastOrNull { it.type == TypePointage.DEPART }
+            val duree = if (arriveeP != null && departP != null) (departP.timestamp - arriveeP.timestamp) / 60000 else null
+            LignePresence(dateMs, arriveeP?.id, arriveeP?.timestamp, departP?.id, departP?.timestamp, duree)
         }
+    }
+
+    suspend fun modifierPointage(pointageId: Long, newTimestamp: Long) = withContext(Dispatchers.IO) {
+        val pointage = db.pointageDao().getById(pointageId) ?: return@withContext
+        db.pointageDao().update(pointage.copy(timestamp = newTimestamp))
     }
 
     suspend fun ajouterEmployee(nom: String, prenom: String, matricule: String, poste: String): Long = withContext(Dispatchers.IO) {
@@ -114,12 +130,15 @@ class PointageRepository(private val db: AppDatabase) {
         }
         if (bestScore < threshold || bestMatch == null) return@withContext Triple(null, null, bestScore)
         val employee = db.employeeDao().getEmployeeById(bestMatch) ?: return@withContext Triple(null, null, bestScore)
-        val type = inscrirePointageInternal(bestMatch, MethodeAuthentification.VISAGE)
+        val type = inscrirePointageInternal(bestMatch, employee, MethodeAuthentification.VISAGE)
         Triple("${employee.prenom} ${employee.nom}", type, bestScore)
     }
 
-    private suspend fun inscrirePointageInternal(employeeId: Long, methode: MethodeAuthentification): TypePointage {
+    private suspend fun inscrirePointageInternal(employeeId: Long, employee: Employee, methode: MethodeAuthentification): TypePointage {
         val dernier = db.pointageDao().getDernierPointage(employeeId)
+        if (dernier != null && System.currentTimeMillis() - dernier.timestamp < COOLDOWN_MS) {
+            throw PointageTropRapideException("${employee.prenom} ${employee.nom}")
+        }
         val type = if (dernier == null || dernier.type == TypePointage.DEPART) TypePointage.ARRIVEE else TypePointage.DEPART
         db.pointageDao().insert(Pointage(employeeId = employeeId, type = type, methode = methode))
         return type

@@ -1,5 +1,6 @@
 package com.pointage.app.ui.fiche
 
+import android.app.TimePickerDialog
 import android.content.ContentValues
 import android.graphics.Canvas
 import android.graphics.Color
@@ -20,6 +21,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.pointage.app.data.model.Employee
 import com.pointage.app.data.model.FichePresence
+import com.pointage.app.data.model.LignePresence
 import com.pointage.app.databinding.FragmentFichePresenceBinding
 import com.pointage.app.ui.viewmodel.PointageViewModel
 import java.io.File
@@ -83,7 +85,10 @@ class FichePresenceFragment : Fragment() {
             chargerFiche()
         }
 
-        val lignesAdapter = LignePresenceAdapter()
+        val lignesAdapter = LignePresenceAdapter(
+            onModifierArrivee = { ligne -> afficherTimePickerModification(ligne, isArrivee = true) },
+            onModifierDepart = { ligne -> afficherTimePickerModification(ligne, isArrivee = false) }
+        )
         binding.recyclerFiche.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerFiche.adapter = lignesAdapter
 
@@ -99,6 +104,12 @@ class FichePresenceFragment : Fragment() {
             binding.tvTotalHeures.text = "Total : ${heures}h ${String.format("%02d", minutes)}min"
         }
 
+        viewModel.pointageModifie.observe(viewLifecycleOwner) { modified ->
+            modified ?: return@observe
+            viewModel.clearPointageModifie()
+            chargerFiche()
+        }
+
         binding.btnTelechargerPdf.setOnClickListener {
             ficheCourante?.let { genererPdf(it) }
                 ?: Toast.makeText(requireContext(), "Chargez d'abord la fiche", Toast.LENGTH_SHORT).show()
@@ -112,6 +123,24 @@ class FichePresenceFragment : Fragment() {
         val annee = annees[binding.spinnerAnnee.selectedItemPosition].toInt()
         viewModel.clearFichePresence()
         viewModel.chargerFichePresence(employeesList[position].id, mois, annee)
+    }
+
+    private fun afficherTimePickerModification(ligne: LignePresence, isArrivee: Boolean) {
+        val pointageId = if (isArrivee) ligne.arriveeId else ligne.departId
+        val currentTs = if (isArrivee) ligne.arrivee else ligne.depart
+        if (pointageId == null || currentTs == null) return
+
+        val cal = Calendar.getInstance().apply { timeInMillis = currentTs }
+        TimePickerDialog(requireContext(), { _, hour, minute ->
+            val newCal = Calendar.getInstance().apply {
+                timeInMillis = ligne.date
+                set(Calendar.HOUR_OF_DAY, hour)
+                set(Calendar.MINUTE, minute)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+            viewModel.modifierPointage(pointageId, newCal.timeInMillis)
+        }, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true).show()
     }
 
     private fun genererPdf(fiche: FichePresence) {

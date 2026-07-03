@@ -10,7 +10,10 @@ import com.pointage.app.databinding.ItemLignePresenceBinding
 import java.text.SimpleDateFormat
 import java.util.*
 
-class LignePresenceAdapter : ListAdapter<LignePresence, LignePresenceAdapter.ViewHolder>(DiffCallback()) {
+class LignePresenceAdapter(
+    private val onModifierArrivee: ((ligne: LignePresence) -> Unit)? = null,
+    private val onModifierDepart: ((ligne: LignePresence) -> Unit)? = null
+) : ListAdapter<LignePresence, LignePresenceAdapter.ViewHolder>(DiffCallback()) {
 
     private val dateFormat = SimpleDateFormat("EEE dd", Locale.FRENCH)
     private val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
@@ -26,6 +29,18 @@ class LignePresenceAdapter : ListAdapter<LignePresence, LignePresenceAdapter.Vie
                 binding.tvDuree.text = "${h}h${String.format("%02d", m)}"
             } else {
                 binding.tvDuree.text = "--"
+            }
+
+            if (ligne.arriveeId != null && onModifierArrivee != null) {
+                binding.tvArrivee.setOnClickListener { onModifierArrivee.invoke(ligne) }
+            } else {
+                binding.tvArrivee.setOnClickListener(null)
+            }
+
+            if (ligne.departId != null && onModifierDepart != null) {
+                binding.tvDepart.setOnClickListener { onModifierDepart.invoke(ligne) }
+            } else {
+                binding.tvDepart.setOnClickListener(null)
             }
         }
     }

@@ -20,7 +20,11 @@
         android:layout_weight="1"
         android:textSize="12sp"
         android:gravity="center"
-        android:textColor="#4CAF50" />
+        android:textColor="#4CAF50"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?android:attr/selectableItemBackground"
+        android:padding="4dp" />
 
     <TextView
         android:id="@+id/tv_depart"
@@ -29,7 +33,11 @@
         android:layout_weight="1"
         android:textSize="12sp"
         android:gravity="center"
-        android:textColor="#F44336" />
+        android:textColor="#F44336"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?android:attr/selectableItemBackground"
+        android:padding="4dp" />
 
     <TextView
         android:id="@+id/tv_duree"

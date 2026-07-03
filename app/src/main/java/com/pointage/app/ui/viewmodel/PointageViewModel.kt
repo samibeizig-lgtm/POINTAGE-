@@ -9,6 +9,7 @@ import com.pointage.app.data.AppDatabase
 import com.pointage.app.data.ExportManager
 import com.pointage.app.data.ImportResult
 import com.pointage.app.data.model.*
+import com.pointage.app.repository.PointageTropRapideException
 import com.pointage.app.repository.PointageRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -68,11 +69,32 @@ class PointageViewModel(application: Application) : AndroidViewModel(application
             try {
                 val type = repository.inscrirePointage(employeeId, methode)
                 _pointageResult.value = PointageResultat(employeeId, type, System.currentTimeMillis())
+            } catch (e: PointageTropRapideException) {
+                _error.value = "⚠ Pointage déjà effectué.\nRéessayez dans 5 minutes."
             } catch (e: Exception) {
                 _error.value = "Erreur lors du pointage: ${e.message}"
             }
         }
     }
+
+    fun modifierPointage(pointageId: Long, newTimestamp: Long) {
+        viewModelScope.launch {
+            try {
+                repository.modifierPointage(pointageId, newTimestamp)
+                _pointageModifie.value = true
+            } catch (e: Exception) {
+                _error.value = "Erreur modification pointage: ${e.message}"
+            }
+        }
+    }
+
+    private val _pointageModifie = MutableLiveData<Boolean?>()
+    val pointageModifie: LiveData<Boolean?> = _pointageModifie
+    fun clearPointageModifie() { _pointageModifie.value = null }
+
+    private val _faceCooldown = MutableLiveData<String?>()
+    val faceCooldown: LiveData<String?> = _faceCooldown
+    fun clearFaceCooldown() { _faceCooldown.value = null }
 
     fun chargerFichePresence(employeeId: Long, mois: Int, annee: Int) {
         viewModelScope.launch {
@@ -126,6 +148,8 @@ class PointageViewModel(application: Application) : AndroidViewModel(application
                 } else {
                     _faceNoMatch.value = score
                 }
+            } catch (e: PointageTropRapideException) {
+                _faceCooldown.value = e.employeeName
             } catch (e: Exception) {
                 _error.value = "Erreur reconnaissance: ${e.message}"
             }

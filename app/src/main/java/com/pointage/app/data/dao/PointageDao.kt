@@ -9,6 +9,12 @@ interface PointageDao {
     @Insert
     suspend fun insert(pointage: Pointage): Long
 
+    @Update
+    suspend fun update(pointage: Pointage)
+
+    @Query("SELECT * FROM pointages WHERE id = :id")
+    suspend fun getById(id: Long): Pointage?
+
     @Query("""
         SELECT * FROM pointages
         WHERE employeeId = :employeeId

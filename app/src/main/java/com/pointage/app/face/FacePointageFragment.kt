@@ -92,6 +92,14 @@ class FacePointageFragment : Fragment() {
             binding.root.postDelayed({ findNavController().popBackStack() }, 2500)
         }
 
+        viewModel.faceCooldown.observe(viewLifecycleOwner) { name ->
+            name ?: return@observe
+            viewModel.clearFaceCooldown()
+            updateStatus("⚠ $name — Pointage récent (< 5 min)", "#FF8800")
+            done.set(true)
+            binding.root.postDelayed({ findNavController().popBackStack() }, 2500)
+        }
+
         viewModel.faceNoMatch.observe(viewLifecycleOwner) { score ->
             score ?: return@observe
             processing.set(false)

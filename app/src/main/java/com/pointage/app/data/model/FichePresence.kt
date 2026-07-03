@@ -9,7 +9,9 @@ data class FichePresence(
 
 data class LignePresence(
     val date: Long,
+    val arriveeId: Long?,
     val arrivee: Long?,
+    val departId: Long?,
     val depart: Long?,
     val dureeMinutes: Long?
 ) {
